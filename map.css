@@ -1,0 +1,72 @@
+.regionJump	{ stroke: #000000; stroke-width:1.1; }
+.jb	{ stroke: #0000FF; stroke-width:3; fill: none; }
+.eh	{stroke: #00B000; stroke-width: 1; fill: #CCCCCC; }
+.el	{stroke: #F00000; stroke-width: 1; stroke-dasharray: 8, 4; fill: #CCCCCC; }
+.e	{stroke: #000000; stroke-width: 1; fill: #CCCCCC; }
+.exh	{stroke: #00B000; stroke-width: 2; fill: #CCCCCC; }
+.exl	{stroke: #F00000; stroke-width: 2; stroke-dasharray: 8, 3; fill: #CCCCCC; }
+.ex	{stroke: #000000; stroke-width: 2; fill: #CCCCCC; }
+.es	{font-size:9px; font-family: Arial, Helvetica, sans-serif; fill: #000000;}
+.er	{font-weight: bold; font-size:7px; font-family: verdana, Arial, sans-serif; fill: #000000;}
+.sh	{stroke: #00B000; stroke-width: 1; }
+.sl	{stroke: #F00000; stroke-width: 1; stroke-dasharray: 8, 3}
+.s	{stroke: #000000; stroke-width: 1.0; }
+.sxh	{stroke: #00B000; stroke-width: 2.5; }
+.sxl	{stroke: #F00000; stroke-width: 2.5; stroke-dasharray: 8, 3; }
+.sx	{stroke: #000000; stroke-width: 2.5; }
+.scl	{stroke: transparent; stroke-width: 2; fill: transparent;}
+.ss	{font-family: Arial, Helvetica, sans-serif; font-size:7px; fill: #000000;}
+.st	{ font-size:5px; font-family: Arial; fill: #000000;}
+.so	{fill: #ff0000;}
+.i	{stroke: #0080FF; stroke-width: 1; fill: none;}
+.o	{fill: #ffffff;}
+.oc	{fill: #0000FF;}
+.oa	{fill: #FFDC00;}
+.og	{fill: #00FF00;}
+.om	{fill: #FF0000;}
+.o1	{fill: #ffffff; stroke-width: 0.5; stroke: #000000; }
+.o2	{fill: #ffffff; stroke-width: 0.5; stroke: #000000;}
+.oo	{fill: none; stroke: #000000; stroke-width:1; }
+.v1	{stroke-width: 0.5; stroke: ; fill: #FF0000;}
+.v2	{stroke-width: 0.5; stroke: ; fill: #00FF00;}
+.v3	{stroke-width: 0.5; stroke: ; fill: #FFDC00;}
+.v4	{stroke-width: 0.5; stroke: ; fill: #0000FF;}
+.lb	{stroke-width: 1; stroke: #000000; fill: #ffffff;}
+.lbt	{stroke-width: 1; stroke: #000000; fill: #ffffff;}
+.lt	{fill: #000000; font-family: Arial, Helvetica, sans-serif; font-weight: bold; font-size: 12px;}
+.lc	{fill: #000000; font-family: Arial, Helvetica, sans-serif; font-size: 11px;}
+.l	{fill: #000000; font-family: Arial, Helvetica, sans-serif; font-size: 10px;}
+.h	{fill: none; stroke-width: 3; stroke: #000000; }
+.hw	{fill: none; stroke-width: 2; stroke: #00AA00; }
+.hl	{fill: none; stroke-width: 2; stroke: #F00000; }
+.hg	{fill: none; stroke-width: 2; stroke: #00B000; }
+
+
+.nullsec
+{
+	stroke-dasharray: 2, 2;
+}
+
+
+.lowsec
+{
+	stroke-dasharray: 8, 4;
+}
+
+
+.no_offices 
+{
+	fill: #FF6347;
+}
+.one_office
+{
+	fill: #CDAD00;
+}
+.plenty_offices
+{
+	fill: #7CFC00;
+}
+.low_offices
+{
+	fill: #8FBC8F;
+}
