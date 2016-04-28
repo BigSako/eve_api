@@ -41,7 +41,7 @@ function parse_zkillboard_data($min_kill_id)
     {
         $url = "https://zkillboard.com/api/" . $SETTINGS['zkillboard_api'];
     } else {
-        $url = "https://zkillboard.com/api/" . $SETTINGS['zkillboard_api']  . "afterKillID/" . $min_kill_id . "/orderDirection/asc";
+        $url = "https://zkillboard.com/api/" . $SETTINGS['zkillboard_api']  . "afterKillID/" . $min_kill_id . "/orderDirection/asc/";
     }
 
 	echo "\tFetching from $url\n";
