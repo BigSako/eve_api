@@ -19,7 +19,7 @@ ini_set('memory_limit', '-1');
 	if (file_exists($path) && !isset($_REQUEST['continue']))
 	{
 		echo "There is an update file already in place, it was created at " . date("F d Y H:i:s", filemtime($path)) . "<br />";
-		echo 'Click <a href="api.php?action=admin_sde_status&continue=1">here</a> if you want to continue with this file, or click <a href="api.php?action=admin_sde_status&delete=1">delete</a>  to delete that file!<br />';
+		echo 'Click <a href="api.php?action=admin_sde_status&continue=1">here</a> if you want to continue with this file (this will not start the process, so it is safe to click it), or click <a href="api.php?action=admin_sde_status&delete=1">delete</a>  to delete that file!<br />';
 	} else {
 		if (!isset($_REQUEST['continue']))
 		{
