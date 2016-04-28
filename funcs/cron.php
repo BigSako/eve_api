@@ -2394,26 +2394,35 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
                     	sec_status=$securityStatus
                     	where character_id='$character_id'");
 
-                    /* 
-CREATE TABLE IF NOT EXISTS `character_system_log` (
-  `character_id` int(15) NOT NULL,
-  `first_seen` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `location` varchar(64) NOT NULL,
-  `ship` varchar(32) NOT NULL,
-  `last_seen` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`character_id`,`first_seen`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-*/
-					$sql3 = "INSERT INTO character_system_log (character_id, first_seen, location, ship, last_seen) 
-					VALUES
-					($character_id, now(), '$location', '$ship_type', now())
-					";
-					$res3 = $mysqlidb->query($sql3);
+                    // get the last location of this character
+                    $sql3 = "SELECT first_seen, location FROM character_system_log WHERE character_Id=$character_id ORDER BY last_seen DESC LIMIT 1";
+                    $res3 = $mysqlidb->query($sql3);
+                    $last_known_location = "";
+                    $first_seen = 0;
+                    if ($res3->num_rows == 1)
+                    {
+                    	$locrow = $res3->fetch_array();
+                    	$last_known_location = $locrow['location'];
+                    	$first_seen = $locrow['first_seen'];
+                    }
+
+                    // if location has changed, insert it into system_log
+                    if ($last_known_location != $location)
+                    {
+						$sql3 = "INSERT INTO character_system_log (character_id, first_seen, location, ship, last_seen) 
+						VALUES
+						($character_id, now(), '$location', '$ship_type', now())
+						";
+						$res3 = $mysqlidb->query($sql3);
+					} else {
+						$sql3 = "UPDATE character_system_log SET last_seen=now() WHERE character_id=$character_id AND first_seen='$first_seen'";
+						$res3 = $mysqlidb->query($sql3);
+					}
 
 					if (!$res3)
 					{
-						echo "ERror doing '$sql3': " . $mysqlidb->error . "\n";
+						echo "Error doing '$sql3': " . $mysqlidb->error . "\n";
 					}
 
                 } // else - not a big deal, didnt get last ship type name and last known location, so let's just set them to unknown.
