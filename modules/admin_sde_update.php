@@ -60,7 +60,7 @@
 			if (substr(trim($line), -1, 1) == ';')
 			{
 				// Perform the query
-				$static_db->query($templine) or die('Error performing query \'<strong>' . $templine . '\': ' . mysql_error() . '<br /><br />');
+				$static_db->query($templine) or die('<b>Error performing query</b> \'' . $templine . '\'<br/><b>Error was:</b> ' . $static_db->error . '<br /><br />');
 				set_time_limit(30);
 				// Reset temp variable to empty
 				$templine = '';
