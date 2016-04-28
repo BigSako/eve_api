@@ -13,7 +13,7 @@ $carriers_dreads_id = array(19720, 19722, 19724, 19726, 23757, 23911, 23915, 244
 $dreads_id = array(19720, 19722, 19724, 19726);
 $carriers_id = array(23757, 23911, 23915, 24483);
 
-$force_aux_id = array(0);
+$force_aux_id = array(37604, 37605, 37606, 37607);
 // rorqual = 28352
 
 

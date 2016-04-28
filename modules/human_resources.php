@@ -389,6 +389,7 @@ EOF;
 			GROUP BY `auth_users`.`user_id`";
 	$res = $db->query($qry);
 	$dreads = $res->num_rows;
+
 	$qry = "SELECT `auth_users`.`user_id`
 			FROM `auth_users`
 			JOIN `api_characters` ON `auth_users`.`user_id` = `api_characters`.`user_id`
@@ -401,13 +402,26 @@ EOF;
 	$res = $db->query($qry);
 	$carriers = $res->num_rows;
 
+	$qry = "SELECT `auth_users`.`user_id`
+			FROM `auth_users`
+			JOIN `api_characters` ON `auth_users`.`user_id` = `api_characters`.`user_id`
+			JOIN `corp_members` ON `api_characters`.`character_id` = `corp_members`.`character_id`
+			JOIN `player_supercarriers` ON `api_characters`.`character_id` = `player_supercarriers`.`character_id`
+			JOIN `eve_staticdata`.`invTypes` ON `eve_staticdata`.`invTypes`.`typeID` = `player_supercarriers`.`typeID`
+			WHERE `eve_staticdata`.`invTypes`.`groupID` = 1538
+			AND `corp_members`.`corp_id` = $corp_id
+			GROUP BY `auth_users`.`user_id`";
+	$res = $db->query($qry);
+	$faux = $res->num_rows;
+
     echo "<tr><td>";
 	printPieHigh("Members with at least One",
         array(
             "Dread" => array("count" => $dreads),
             "Carrier" => array("count" => $carriers),
             "Super" => array("count" => $supers),
-            "Titan" => array("count" => $titans)
+            "Titan" => array("count" => $titans),
+            "Force Aux" => array("count" => $faux)
         ));
 
     echo "Show all members with at least one <a href=\"api.php?action=member_audit_byship&members=dread&corp_id=$corp_id\">Dread</a> | ";

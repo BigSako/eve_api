@@ -45,8 +45,10 @@
 		// Read in entire file
 		$handle = fopen($path, "r");
 
+		$aborted = false;
+
 		// Loop through each line
-		while (($line = fgets($handle)) !== false)
+		while (!$aborted && ($line = fgets($handle)) !== false)
 		{
 			// Skip it if it's a comment
 			if (substr($line, 0, 2) == '--' || $line == '')
@@ -64,7 +66,8 @@
 				if (!$res)
 				{
 					echo '<b>Error performing query</b> \'' . $templine . '\'<br/><b>Error was:</b> ' . $static_db->error . '<br />';
-					exit();
+					$aborted = true;
+					break;
 				}
 				set_time_limit(30);
 				// Reset temp variable to empty
@@ -72,8 +75,12 @@
 			}
 		}
 		fclose($handle);
-		echo "Tables imported successfully<br />";
-
+		if (!$aborted)
+		{
+			echo "Tables imported successfully<br />";
+		} else {
+			echo "Tables not imported...<br />";
+		}
 		
 		
 		base_page_footer();

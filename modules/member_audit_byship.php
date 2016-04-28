@@ -37,6 +37,10 @@ else
 			$where = "s.typeID IN (" . implode(",", $carriers_id) . ")";
 			$title = "with carriers";
 			break;
+		case "faux":
+			$where = "s.typeID IN (" . implode(",", $force_aux_id) . ")";
+			$title = "with force aux";
+			break;
 		case "dread":
             $where = "s.typeID IN (" . implode(",", $dreads_id) . ")";
 			$title = "with dreads";
@@ -67,6 +71,7 @@ else
 	
 	echo "<b>Filter members:</b><ul>
 	<li><a href=\"api.php?action=member_audit_byship&members=carrier&corp_id=$corp_id\">Has Carrier</a></li>
+	<li><a href=\"api.php?action=member_audit_byship&members=faux&corp_id=$corp_id\">Has Force Aux</a></li>
 	<li><a href=\"api.php?action=member_audit_byship&members=dread&corp_id=$corp_id\">Has Dread</a></li>
 	<li><a href=\"api.php?action=member_audit_byship&members=nocarrier&corp_id=$corp_id\">Does not have a Carrier</a></li>
 	<li><a href=\"api.php?action=member_audit_byship&members=nodread&corp_id=$corp_id\">Does not have a Dread</a></li>
