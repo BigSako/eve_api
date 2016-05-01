@@ -2,11 +2,14 @@
 	base_page_header('','Your Caps', 'Your Caps');
 
 
+	$all_capital_ids_str = '(' . implode($all_capital_ids, ',') . ')';
+
+
 	$user_id = $GLOBALS['userid'];
 	$sql = "
 SELECT a.locationID, t.typeID, t.typeName, a.itemId, a.character_id, a.inSpace, a.realName, a.x, a.y, a.z, c.character_name, c.corp_name, c.character_id, c.jumpFatigue, c.jumpActivation
 FROM player_supercarriers a, eve_staticdata.invTypes t, api_characters c
-WHERE a.typeID = t.typeID and t.typeName in ('Ragnarok', 'Avatar', 'Erebus', 'Leviathan', 'Revenant', 'Aeon', 'Nyx', 'Hel', 'Wyvern','Archon', 'Thanatos','Nidhoggur', 'Chimera','Moros','Naglfar','Revelation', 'Phoenix','Rorqual') 
+WHERE a.typeID = t.typeID and t.typeId in $all_capital_ids_str
 AND a.character_id = c.character_id
 and c.user_id = $user_id
 ORDER BY t.typeName ASC
