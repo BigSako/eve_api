@@ -96,7 +96,7 @@ touch($cron_file);
 require('funcs/basics.php');
 init(); // includes all the things
 require("funcs/cron.php");
-require("funcs/killboard.php");
+require("funcs/cron_killboard.php");
 
 echo("Logging to: ".LOGFILE."\n");
 do_log("CRON: Initialising",0);

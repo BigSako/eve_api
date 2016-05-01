@@ -86,9 +86,10 @@ $privateKey = file_get_contents($keyfile);
 
 require('funcs/basics.php');
 init(); // includes all the things
-require("funcs/cron.php");
-require("funcs/TeamSpeak3/TeamSpeak3.php");
-require("funcs/ts3.php");
+require('funcs/cron.php');
+require('funcs/cron_corp.php');
+require('funcs/TeamSpeak3/TeamSpeak3.php');
+require('funcs/ts3.php');
 
 echo("Logging to: ".LOGFILE."\n");
 do_log("CRON: Initialising",0);

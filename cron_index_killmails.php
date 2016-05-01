@@ -7,7 +7,6 @@
 * in funcs/cron.php                              *
 *************************************************/
 require('config.php');
-require('funcs/killboard.php');
 
 define('DEBUG',7);
 define('LOGFILE',LOGDIR ."cron.log");
@@ -43,6 +42,8 @@ touch($cron_file);
 require('funcs/basics.php');
 init(); // includes all the things
 require("funcs/cron.php");
+require('funcs/cron_killboard.php');
+
 
 
 $globalDb = connectToDB();
