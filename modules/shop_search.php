@@ -17,9 +17,10 @@ $res = $db->query($sql);
 
 if ($res->num_rows == 0)
 {
-	base_page_header('',"Shop &nbsp; &nbsp; <form style=\"display:inline; margin:0px; padding:0px;\" method=\"post\" action=\"api.php?action=shop_search\">
-<input type=\"text\" name=\"s\" style=\"height: 24px;\"/>
- <input type=\"submit\" value=\"\" style=\"background-image: url(images/search.png); background-repeat: no-repeat; border: none; width: 24px; height: 24px; background-size: 24px 24px; \" /></form>", 'Shop');
+	base_page_header('',"Shop", "Shop", 
+	"<form method=\"post\" action=\"api.php?action=shop_search\">
+	<input placeholder=\"Search for an item by name\" type=\"text\" name=\"s\" />
+	 </form>");
 
 	echo "We couldn't find the item you were looking for.<br />Please try again or <a href=\"api.php?action=shop\">browse through the shop categories</a>";
 
@@ -35,9 +36,10 @@ if ($res->num_rows == 0)
 } else
 {
 	// diplay items
-	base_page_header('',"Shop &nbsp; &nbsp; <form style=\"display:inline; margin:0px; padding:0px;\" method=\"post\" action=\"api.php?action=shop_search\">
-<input type=\"text\" name=\"s\" style=\"height: 24px;\"/>
- <input type=\"submit\" value=\"\" style=\"background-image: url(images/search.png); background-repeat: no-repeat; border: none; width: 24px; height: 24px; background-size: 24px 24px; \" /></form>", 'Shop');
+	base_page_header('',"Shop", "Shop", 
+	"<form method=\"post\" action=\"api.php?action=shop_search\">
+	<input placeholder=\"Search for an item by name\" type=\"text\" name=\"s\" />
+	 </form>");
 
 	if ($res->num_rows == 20)
 	{

@@ -18,19 +18,7 @@ $db = connectToDB();
 $amount = marketGetAmountWalletItems($user_id);
 $shopping_cart = marketGetWalletItems($user_id);
 
-		base_page_header('',"<div>
-<div style=\"width: 100px; float: left; height: 128px;\">
-<a href=\"api.php?action=shop\"><img src=\"images/best_panda_logo.png\" width=\"200\" height=\"95\" border=\"0\"></a>
-</div>
-<div style=\"width: 100px; float: left; height: 128px; margin-left: 500px;\">
-<form method=\"post\" action=\"api.php?action=shop_search\">
-<input type=\"text\" name=\"s\" style=\"height: 30px; width: 300px;\"/>
- <input type=\"submit\" value=\"\" style=\"background-image: url(images/search.png); background-repeat: no-repeat; border: none; width: 24px; height: 24px; background-size: 24px 24px; \" /></form>
-</div>
-<div style=\"width: 100px; float: left; margin-left: 600px; height: 128px;\">
- <a href=\"api.php?action=shop&page=cart\"><img src=\"images/shopping-cart.png\" width=\"32\" height=\"32\" title=\"You currently have $amount in your shopping cart\" /> $amount</a>
-</div>
-", 'Shop');
+
 
 
 if (isset($_REQUEST['item_id']))
@@ -45,9 +33,14 @@ if (isset($_REQUEST['item_id']))
 	if ($res->num_rows != 1)
 	{
 		echo "ERROR: Not found";
+		exit();
 	} else {
 		$row = $res->fetch_array();
 		$item_name = $row['typeName'];
+		base_page_header('',"Shop - $item_name", "Shop - $item_name", 
+"<form method=\"post\" action=\"api.php?action=shop_search\">
+<input placeholder=\"Search for an item by name\" type=\"text\" name=\"s\" />
+ </form>");
 		$volume = $row['volume'];
 		$marketGroupID = $row['marketGroupID'];
 		$description = $row['description'];
