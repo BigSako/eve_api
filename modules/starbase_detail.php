@@ -868,6 +868,39 @@ ORDER BY kill_time DESC";
 	} else {
 		echo "<h3>There are no characters in this system</h3>";
 	}
+
+	// check history
+	$sql = "SELECT l.first_seen, l.last_seen, l.character_id, l.location, l.ship, c.character_name
+	FROM character_system_log l, api_characters c
+	 WHERE
+	c.character_id = l.character_id AND l.location = '$solarSystemname'
+	ORDER BY l.last_seen DESC ";
+
+	$resHistory = $db->query($sql);
+
+	if (!$resHistory)
+	{
+		echo "Query failed='$sql'";
+	}
+
+	echo "<h3>System History</h3>
+		<b>History might not always be complete! Use with caution!</b><br />
+		<table style=\"width: 100%\">
+			<tr><th>From</th><th>To</th><th>Character Name</th><th>Ship</th>
+			</tr>
+		";
+
+	while ($historyRow = $resHistory->fetch_array())
+	{
+		echo "<tr>";
+		echo "<td>" . $historyRow['first_seen'] . "</td><td>" . $historyRow['last_seen'] . "</td>";
+		echo "<td><a href=\"api.php?action=show_character&character_id=" . $historyRow['character_id'] . "\">" . $historyRow['character_name'] . "</a></td>";
+		echo "<td>" . $historyRow['ship'] . "</td>";
+		echo "</tr>";
+	}
+
+	echo "</table>";
+
 	echo "</div>";
 	
 
