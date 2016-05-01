@@ -576,6 +576,31 @@
 		$res = $db->query($qry);
 		
 		$end_mtime = microtime(true) - $start_mtime;		
+
+
+
+		// next: show system history
+		$sql = "SELECT first_seen, last_seen, location, ship FROM character_system_log WHERE character_id = $c_id ORDER BY last_seen DESC";
+
+		$res = $db->query($sql);
+
+		echo "<h3>System History</h3>
+		<b>History might not always be complete! Use with caution!</b><br />
+		<table style=\"width: 100%\">
+			<tr><th>From</th><th>To</th><th>System</th><th>Ship</th>
+			</tr>
+		";
+
+		while ($row = $res->fetch_array())
+		{
+			echo "<tr>";
+			echo "<td>" . $row['first_seen'] . "</td><td>" . $row['last_seen'] . "</td>";
+			echo "<td>" . $row['location'] . "</td><td>" . $row['ship'] . "</td>";
+
+			echo "</tr>";
+		}
+
+		echo "</table>";
 		
 
 
