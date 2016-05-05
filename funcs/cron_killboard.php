@@ -436,6 +436,75 @@ function index_killmails()
         $last_date = $kill_date;
     }
 
+    // make sure to process the remaining killmails
+    // if we switched date, we need to write per character statistics into our database (kills_stats_per_char)
+    foreach ($stored_data[$last_date] as $char_id => $killmails)
+    {            
+        // flatten the killmail IDs, we only store them as a textfield in database
+        $kill_list = implode(",", $killmails['kill_ids']);
+
+        $sql = "INSERT INTO kills_stats_per_char 
+        (`date`, character_id, corp_id, alliance_id, 
+        number_kills, number_losses, number_kills_logi, number_kills_super, kill_ids)
+
+        VALUES ('$last_date', $char_id, " . $killmails['corp_id'] . ", " . $killmails['alliance_id'] . ", " . $killmails['number_kills'] . ", " . $killmails['number_losses'] . ", " . $killmails['number_kills_as_logi'] . ", " . $killmails['number_kills_as_supercapital'] . ", '$kill_list')
+
+        ON DUPLICATE KEY UPDATE 
+            number_kills=" . $killmails['number_kills'] . ", 
+            number_losses=" . $killmails['number_losses'] . ", 
+            number_kills_logi=" . $killmails['number_kills_as_logi'] . ", 
+            number_kills_super=" . $killmails['number_kills_as_supercapital'] . ", 
+            kill_ids='$kill_list'
+        ";
+
+        
+        if (!$globalDb->query($sql))
+        {
+            echo "MYSQL ERROR OCCURED; PRINTING DEBUG INFO\n";
+            echo $char_id . "\n";
+            print_r($killmails);
+
+            echo $sql . "\n";
+            echo $globalDb->error;
+            echo "\n";
+            return;
+        }
+        
+    }
+
+    // if we switched date, we need to write corp statistics into our database (kills_stats_per_corp)
+    foreach ($stored_data_corp as $stats_corp_id => $stats_corp_data)
+    {
+        $stats_alliance_id = $stats_corp_data['alliance_id'];
+        $num_kills = $stats_corp_data['number_kills'];
+
+        $sql = "INSERT INTO kills_stats_per_corp (`date`, corp_id, alliance_id, number_kills) VALUES 
+        ('$last_date', $stats_corp_id, $stats_alliance_id, $num_kills)
+        ON DUPLICATE KEY UPDATE
+        number_kills=$num_kills
+        ";
+        
+        if (!$globalDb->query($sql))
+        { 
+            echo "MYSQL ERROR OCCURED; PRINTING DEBUG INFO\n";
+            echo $$corp_id . "\n";
+            echo $sql . "\n";
+            echo $globalDb->error;
+            echo "\n";
+            return;
+        } 
+    }
+
+
+
+    echo "Found a new day: $kill_date\n";
+
+    echo "Processed $cnt killmails\n";
+    $stored_data[$last_date] = NULL;
+    $stored_data_corp = array();
+
+    $cnt = 0;
+
 
     echo "\n";
 }
