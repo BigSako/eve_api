@@ -209,7 +209,6 @@ function remove_old_killmails()
     global $globalDb;
     echo "Deleting old killmails...";
     $sql = "DELETE FROM kills_killmails WHERE TIMESTAMPDIFF(MONTH,kill_time,now()) > 3";
-    // TODO: Delete all related items (like dropped items, attackers, etc...)
     $res = $globalDb->query($sql);
 
     if (!$res)
@@ -250,7 +249,7 @@ function index_killmails()
     $sql = "SELECT internal_kill_ID, external_kill_ID, external_source_type, DATE(kill_time) as kill_date, 
             victim_character_id, victim_corp_id, victim_alliance_id, victim_ship_type_id
             FROM kills_killmails k WHERE 
-            k.kill_time BETWEEN ('$start_date' - INTERVAL 1 MONTH) AND (CURDATE()) 
+            k.kill_time > ('$start_date' - INTERVAL 1 MONTH) 
             ORDER BY kill_time ASC";
 
 
