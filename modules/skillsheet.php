@@ -1,7 +1,6 @@
 <?php
 
 $allowed = false;
-$admin = false;
 
 $db = connectToDB();
 $user_id = $GLOBALS['userid'];
@@ -22,7 +21,6 @@ if ($res->num_rows >= 1)
 	$row = $res->fetch_array();
 	if ($row['page_name'] == 'skillsheet_admin')
 	{
-		$admin = true;
 		$allowed = true;
 	}
 } else {
@@ -40,6 +38,25 @@ if ($allowed == false)
 {
 	exit;
 }
+
+
+// prepare a list of skillsheets for the secondary menu on top
+$list_of_skills = '<ul class="dropdown menu" data-dropdown-menu><li><a href="#">Shiptype Filter</a><ul class="menu">';
+
+$list_of_skills .= '<li><a href="api.php?action=skillsheet&character_id=' . $character_id . '">Show all Skills</a></li>';
+
+
+// get all filters
+$sql = "SELECT id, name, `desc` FROM skill_filter ORDER BY name ASC";
+$reslist = $db->query($sql);
+
+while ($rowlist = $reslist->fetch_array())
+{
+	$list_of_skills .= "<li><a href=\"api.php?action=skillsheet&character_id=$character_id&filter=" . $rowlist['id'] . "\">" . $rowlist['name'] . "</a>";
+}
+
+
+$list_of_skills .= '</ul></li></ul>';
 
 
 
@@ -76,17 +93,15 @@ ORDER BY k.groupName, k.typeName ASC
 ";
 }
 
-	echo "<!-- SQL = '$sql' -->";
+		
+	
+	echo "$list_of_skills"; 
 
-	
-	
-	echo "Filters: <a href=\"api.php?action=skillsheet&character_id=$character_id\">None</a> | " .
-				"<a href=\"api.php?action=skillsheet&character_id=$character_id&filter=1\">Nyx/Aeon</a> | " .
-				"<a href=\"api.php?action=skillsheet&character_id=$character_id&filter=3\">Avatar/Revelation</a> | " .
-				"<a href=\"api.php?action=skillsheet&character_id=$character_id&filter=2\">Erebus/Moros</a> | " .
-				"<a href=\"api.php?action=skillsheet&character_id=$character_id&filter=4\">Ragnarok/Naglfar</a> | " .
-				"<a href=\"api.php?action=skillsheet&character_id=$character_id&filter=5\">Leviathan/Phoenix</a> | " .
-				"<br /><br />";
+
+
+
+
+	echo "<h3>Skills";
 	
 	if ($filter != 0)
 	{
@@ -94,113 +109,21 @@ ORDER BY k.groupName, k.typeName ASC
 		if ($res->num_rows == 1)
 		{
 		 	$row = $res->fetch_array();
-			echo "<b>ACTIVE FILTER: " . $row['name'] . "</b> - <a href=\"api.php?action=skillsheet&requirements=1&filter=$filter&character_id=$character_id\">Show requirements for this filter</a><br />";
+			echo " (ACTIVE FILTER: " . $row['name'] . ")";
 		} else 
 		{
 			$filter = 0;
 		}
 
 	}
-	echo "<br />";
+	echo "</h3>";
 	
 	
-	if (isset($_REQUEST['requirements']) && $_REQUEST['requirements'] == 1 && $filter != 0)
-	{
-		$sql = "SELECT k.groupID, k.groupName, k.typeName, k.typeID, k.rank, f.minLevel, k.published
-FROM invSkills k
-LEFT JOIN skill_filter_skills f ON f.filter_id=$filter AND f.typeID = k.typeID
 
-ORDER BY k.groupName, k.typeName";
 		$res = $db->query($sql);
-		
-		echo "<table id='your_api_keys' style=\"width: 100%\">";
-		echo "<tr><td colspan=\"3\" class=\"long_table_header\">Requirements</td></tr>";
-		echo "<tr><th class=\"table_header\">Skill Name</th>";
-		
-		if ($admin == true)
-		{
-			echo "<th class=\"table_header\">Admin</th>";
-		}
-		
-		echo "<th class=\"table_header\"></th></tr>";
-		
-		$lastGroupID = -1;
-		
-		$show_group_id = intval($_REQUEST['show_group_id']);
-		
-		while ($row = $res->fetch_array())
-		{
-			$groupID = $row['groupID'];
-			$groupName = $row['groupName'];
-			$sp = $row['skillpoints'];
-			$typeID = $row['typeID'];
-			$skill_name = $row['typeName'];		
-			$level = $row['minLevel'];
-			$published = $row['published'];
-			
-			if ($published == 0)
-				continue;
-			
-			if ($level === NULL)
-				$level = -1;
-			
-			if ($lastGroupID != $groupID && $groupName != 'Learning' && $groupName != 'Fake Skills')
-			{
-				echo "<tr><td colspan=\"3\" class=\"long_table_header\">
-					<a name=\"gr$groupID\" href=\"api.php?action=skillsheet&requirements=1&filter=$filter&character_id=$character_id&show_group_id=$groupID#gr$groupID\">$groupName</a>
-					
-					</td></tr>\n";
-			}
-			
-			$lastGroupID = $groupID;
-			
-			if ($groupID != $show_group_id)
-				continue;
-			
-			
-			
 
-			
-			echo "<tr><td><a name=\"$typeID\">$skill_name</a> / Required Level: $level ";
-
-			echo "/ ID: $typeID";
-			
-			if ($admin == true)
-			{
-				echo "</td><td>Level: 
-				<a href=\"api.php?action=skillsheet_admin&show_group_id=$groupID&character_id=$character_id&filter=$filter&typeID=$typeID&newLevel=0\">0</a>
-				<a href=\"api.php?action=skillsheet_admin&show_group_id=$groupID&character_id=$character_id&filter=$filter&typeID=$typeID&newLevel=1\">1</a> 
-				<a href=\"api.php?action=skillsheet_admin&show_group_id=$groupID&character_id=$character_id&filter=$filter&typeID=$typeID&newLevel=2\">2</a>
-				<a href=\"api.php?action=skillsheet_admin&show_group_id=$groupID&character_id=$character_id&filter=$filter&typeID=$typeID&newLevel=3\">3</a>
-				<a href=\"api.php?action=skillsheet_admin&show_group_id=$groupID&character_id=$character_id&filter=$filter&typeID=$typeID&newLevel=4\">4</a>
-				<a href=\"api.php?action=skillsheet_admin&show_group_id=$groupID&character_id=$character_id&filter=$filter&typeID=$typeID&newLevel=5\">5</a>
-				";
-			}
-			
-			
-			echo "</td><td>";
-			
-			if ($level != -1)
-			{
-				echo "<img src=\"images/skill_level$level.png\" />";
-			} else
-			{
-				echo "Not required";
-			}
-			
-			echo "</td></tr>\n";
-		}
-		
-		echo "</table>";
-
-	}
-	else // display normal skillqueue
-	{
-		$res = $db->query($sql);
 	
-		echo "<table id='your_api_keys' style=\"width: 100%\">";
-		echo "<tr><td colspan=\"2\" class=\"long_table_header\">Skills</td></tr>";
-		echo "<tr><th class=\"table_header\">Skill Name</th><th class=\"table_header\"></th></tr>";
+		echo "<table style=\"width: 95%\">";
 			
 		$lastGroupID = -1;
 		$total_group_sp = 0;
@@ -227,7 +150,7 @@ ORDER BY k.groupName, k.typeName";
 				$total_group_sp = 0;
 				$total_group_trained = 0;
 				$total_group_untrained = 0;
-				echo "<tr><td colspan=\"2\" class=\"long_table_header\">$groupName</td></tr>\n";
+				echo "<tr><th colspan=\"2\" class=\"long_table_header\">$groupName</th></tr>\n";
 			}
 			
 			$lastGroupID = $groupID;
@@ -295,8 +218,7 @@ ORDER BY k.groupName, k.typeName";
 
 		echo "</table>";	
 
-	}
-
+	
 
 	base_page_footer('1','');
 
