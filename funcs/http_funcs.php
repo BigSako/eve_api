@@ -306,6 +306,8 @@ EOF;
         create_left_menu_item_if_allowed('timerboard', 'api.php?action=timerboard', 'Timerboard', $allowed_pages);
         create_left_menu_item_if_allowed('staging_system', 'api.php?action=staging_system', 'Staging System', $allowed_pages);
 
+        create_left_menu_item_if_allowed('skills_admin', 'api.php?action=skills_admin', 'Skills Admin', $allowed_pages);
+
         echo "</ul></li>";
     }
 
