@@ -50,6 +50,11 @@ else
 			$title = "without a dread";
             $filter = true;
 			break;
+		case "nofaux":
+			$where = "s.typeID IN (" . implode(",", $force_aux_id) . ")";
+			$title = "without a force aux";
+			$filter = true;
+			break;	
 		case "nocarrier":
             $where = "s.typeID IN (" . implode(",", $carriers_id) . ")";
 			$title = "without a carrier";
@@ -74,6 +79,7 @@ else
 	<li><a href=\"api.php?action=member_audit_byship&members=faux&corp_id=$corp_id\">Has Force Aux</a></li>
 	<li><a href=\"api.php?action=member_audit_byship&members=dread&corp_id=$corp_id\">Has Dread</a></li>
 	<li><a href=\"api.php?action=member_audit_byship&members=nocarrier&corp_id=$corp_id\">Does not have a Carrier</a></li>
+	<li><a href=\"api.php?action=member_audit_byship&members=nofaux&corp_id=$corp_id\">Does not have a Force Auxiliary</a></li>
 	<li><a href=\"api.php?action=member_audit_byship&members=nodread&corp_id=$corp_id\">Does not have a Dread</a></li>
 	</ul><br /><br />";
 			
@@ -85,6 +91,7 @@ else
 	echo "<thead><tr><th>Character Name</th>
 		<th>Ship</th>
 		<th>Location</th>
+		<th>Last Online</th>
 		</tr>
 	</thead>";
 
@@ -157,6 +164,7 @@ u.forum_id, c.state, c.shipType, c.location, c.logonDateTime
 		$collectNames.= $character_name . "\n";
 		
 		$location = $result['location'];
+		$lastOnline = $result['logonDateTime'];
 		$logonDateTime = $result['logonDateTime'];
 
 
@@ -177,9 +185,10 @@ u.forum_id, c.state, c.shipType, c.location, c.logonDateTime
 		}
 		
 		echo "<tr>
-				<td><a href=\"api.php?action=show_member&character_id=$character_id\">$character_name</a></td>
+				<td><a href=\"api.php?action=show_character&character_id=$character_id\">$character_name</a></td>
 				<td>$shipType</td>
 				<td>$location</td>
+				<td>$lastOnline</td>
 			</tr>";
 			
 			

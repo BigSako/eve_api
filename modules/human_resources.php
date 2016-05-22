@@ -424,8 +424,11 @@ EOF;
             "Force Aux" => array("count" => $faux)
         ));
 
-    echo "Show all members with at least one <a href=\"api.php?action=member_audit_byship&members=dread&corp_id=$corp_id\">Dread</a> | ";
-    echo "<a href=\"api.php?action=member_audit_byship&members=carrier&corp_id=$corp_id\">Carrier</a>";
+    echo "<b>More:</b> Show all members with at least one 
+    	<a href=\"api.php?action=member_audit_byship&members=dread&corp_id=$corp_id\">Dread</a> /
+    	<a href=\"api.php?action=member_audit_byship&members=carrier&corp_id=$corp_id\">Carrier</a> /
+    	<a href=\"api.php?action=member_audit_byship&members=faux&corp_id=$corp_id\">Force Aux</a>.
+    	";
 
 echo "</td></tr>";
 
