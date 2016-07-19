@@ -18,7 +18,7 @@ ini_set('memory_limit', '-1');
 	// step 1a: if yes, tell the user that there is, print a date, ask if he wants to delete it
 	if (file_exists($path) && !isset($_REQUEST['continue']))
 	{
-		echo "There is an update file already in place, it was created at " . date("F d Y H:i:s", filemtime($path)) . "<br />";
+		echo "There is an update file already in place, it was created at " . date("F d Y H:i:s", filemtime($path)) . " and has a size of " . filesize($path)/1024 . " kB <br />";
 		echo 'Click <a href="api.php?action=admin_sde_status&continue=1">here</a> if you want to continue with this file (this will not start the process, so it is safe to click it), or click <a href="api.php?action=admin_sde_status&delete=1">delete</a>  to delete that file!<br />';
 	} else {
 		if (!isset($_REQUEST['continue']))
@@ -28,19 +28,23 @@ ini_set('memory_limit', '-1');
 			echo "Downloading file to $path... Please wait...<br />";
 			flush();
 
+			// open output file on filesystem
+			$fp = fopen($path, 'w+');
+
 			$ch = curl_init($mysql_dump_url);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-			$data = curl_exec($ch);
-
+			curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+			curl_setopt($ch, CURLOPT_FILE, $fp); 
+			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+			// get curl response
+			curl_exec($ch); 
 			curl_close($ch);
-
-			file_put_contents($path, $data);
+			fclose($fp);
 
 			echo "Done !<br />";
 			flush();
 		} else {
-			echo "Using already existing file $path<br />";
+			echo "Using already existing file <i>$path</i> (Size: " . filesize($path)/1024 . " kB)<br />";
 		}
 
 		$sde_dir = TMPDIR . "/sde";
