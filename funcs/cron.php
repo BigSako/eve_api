@@ -1334,6 +1334,7 @@ function handle_player_notifications()
 		if ($notification_found == true)
 		{
 			$notifications .= "\n\nYours sincerly,\nThe $SETTINGS[site_name] API Services.\n$SETTINGS[api_url]\n";
+			$notifications .= "You can unsubscribe by going to $SETTINGS[api_url], logging into the forums and going to the API site.";
 			
 			$notifications = str_replace("\n", "\r\n", $notifications);
 			
