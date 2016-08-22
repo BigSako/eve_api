@@ -1341,6 +1341,7 @@ function handle_player_notifications()
 			$globalDb->query("UPDATE auth_users SET last_notification=now() WHERE user_id=$user_id");
 			// send mail
 			mail($mail, "$SETTINGS[site_name] API Notification", $notifications, "From: $SETTINGS[site_name] API Services <$SETTINGS[from_email]>\r\n");
+			sleep(2); // sleep 2 seconds, because of some SMTP limitation...
 		}
 		
 		
