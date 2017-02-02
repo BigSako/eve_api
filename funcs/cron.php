@@ -9,7 +9,7 @@
 function rebuild_groups()
 {
 	do_log("rebuilding auto-assigned groups",1);
-	
+
 	rebuild_members();
 	rebuild_directors();
 	rebuild_ceo();
@@ -22,7 +22,7 @@ function rebuild_groups()
 function tidy_removed_groups()
 {
 	global $globalDb;
-	
+
 	do_log("Tidying up groups that users have voluntarily left",1);
 	$sth=$globalDb->query("select group_id,user_id from group_membership where state=97");
 	while($result=$sth->fetch_array()) {
@@ -53,9 +53,9 @@ function process_telegram_notifications()
 	FROM player_notification n, auth_users a WHERE n.user_id = a.user_id AND a.telegram_user_id <> 0 AND n.send_ping = 1";
 
 	$res = $globalDb->query($sql);
-	
+
 	$cur_hour = gmdate('H');
-	
+
 	while ($row = $res->fetch_array())
 	{
 		$telegram_start_hour = $row['telegram_start_hour'];
@@ -66,7 +66,7 @@ function process_telegram_notifications()
 			$do_send = true;
 		}
 		else
-		{	
+		{
 			// e.g., 08:00 - 17:00
 			if ($telegram_start_hour < $telegram_stop_hour)
 			{
@@ -85,16 +85,16 @@ function process_telegram_notifications()
 				}
 			}
 		}
-		
+
 		if ($do_send)
 		{
 			$telegram_user_id = $row['telegram_user_id'];
 			$notification_id = $row['notification_id'];
-			
+
 			$message = $row['message'];
-			
+
 			sendTelegramMessage($telegram_user_id, $message);
-			
+
 			// make sure we set this as sent
 			$sql = "UPDATE player_notification SET send_ping=2 WHERE notification_id=$notification_id; ";
 			$globalDb->query($sql);
@@ -109,16 +109,16 @@ function process_telegram_notifications()
 function clean_logon_minutes()
 {
 	global $globalDb;
-	
+
 	$sql = "SELECT YEAR( TIMESTAMP ) AS tyear, MONTH( TIMESTAMP ) AS tmonth, DAY( TIMESTAMP ) AS tday, keyId, MAX( logonMinutes ) AS maxMinutes, MIN( logonMinutes ) AS minMinutes, COUNT( * ) AS cnt
-FROM  `player_logonMinutes` 
+FROM  `player_logonMinutes`
 WHERE DATEDIFF( NOW( ) , TIMESTAMP ) > 120
 GROUP BY YEAR( TIMESTAMP ) , MONTH( TIMESTAMP ) , DAY( TIMESTAMP ) , keyId
 HAVING cnt >1";
 
 	$res = $globalDb->query($sql);
 	echo "We have " . $res->num_rows . " entries to clean in logon minutes!\n";
-	
+
 	while ($row = $res->fetch_array())
 	{
 		$day = $row['tday'];
@@ -126,14 +126,14 @@ HAVING cnt >1";
 		$year = $row['tyear'];
 		$keyId = $row['keyId'];
 		$logonMinutes = $row['maxMinutes'];
-		
+
 		$sql2 = "DELETE FROM  `player_logonMinutes`  WHERE keyId='$keyId' AND YEAR(timestamp) = '$year' AND MONTH(TIMESTAMP) = '$month' AND DAY(TIMESTAMP) = '$day' ";
 		$res2 = $globalDb->query($sql2);
 		if (!$res2)
 		{
 			echo "ERROR executing '$sql2'\n";
 		}
-		
+
 		$sql2 = "INSERT INTO `player_logonMinutes` (timestamp, keyId, logonMinutes) VALUES ('$year-$month-$day', '$keyId', '$logonMinutes') ";
 		$res3 = $globalDb->query($sql2);
 		if (!$res3)
@@ -141,8 +141,8 @@ HAVING cnt >1";
 			echo "ERror executing '$sql2'\n";
 		}
 	}
-	
-	
+
+
 }
 
 
@@ -201,7 +201,7 @@ function process_telegram_updates()
 				} else {
 					sendTelegramMessage($msgid, "Error: Please use the following format: subscribe xyz1234567");
 				}
-				
+
 			} else if ($msgtext == "stop")
 			{
 				// unsubscribe that $msgid
@@ -216,7 +216,7 @@ function process_telegram_updates()
 				// user must be registered to receive that request
 				$sql = "SELECT user_id,user_name,has_regged_main FROM auth_users WHERE telegram_user_id='" . $msgid . "' ";
 				$res = $globalDb->query($sql);
-				
+
 				if ($res->num_rows == 0)
 				{
 					sendTelegramMessage($msgid, "I am sorry, I do not know who you are. Did you subscribe yet?");
@@ -225,7 +225,7 @@ function process_telegram_updates()
 					$user_name = $row['user_name'];
 					sendTelegramMessage($msgid, "You are currently logged in as " . $user_name . "\n");
 				}
-				
+
 			} else if ($msgtext == "continue" || $msgtext == "start")
 			{
 				// user must be registered to receive that request
@@ -251,36 +251,36 @@ function process_telegram_updates()
 				{
 					$starttime = substr($msgtext, $pos+1);
 					$pos2 = strpos($starttime, " ");
-					
-					if ($pos2 > 0) 
+
+					if ($pos2 > 0)
 					{
 						$stoptime = intval(substr($starttime, $pos2+1));
 						$starttime = intval(substr($starttime, 0, $pos2));
-						
+
 						echo "stoptime='$stoptime', starttime='$starttime'\n";
-						
+
 						$sql = "SELECT user_id,user_name,has_regged_main FROM auth_users WHERE telegram_user_id='" . $msgid . "' ";
 						$res = $globalDb->query($sql);
-						
+
 						if ($res->num_rows == 0)
 						{
 							sendTelegramMessage($msgid, "I am sorry, I do not know who you are. Did you subscribe yet?");
 						} else
 						{
-							// update 
+							// update
 							$sql = "UPDATE auth_users SET telegram_start_hour='$starttime', telegram_stop_hour='$stoptime' WHERE telegram_user_id='" . $msgid . "' ";
 							$globalDb->query($sql);
 							sendTelegramMessage($msgid, "You will now receive pings only between $starttime:00 and $stoptime:00 EVE TIME (GMT)! If you want to reset, just write settime 0 0.");
 						}
 					}
 				}
-				
+
 			} else if ($msgtext == "shop")
 			{
 				// user must be registered to receive that request
 				$sql = "SELECT user_id,user_name,has_regged_main FROM auth_users WHERE telegram_user_id='" . $msgid . "' ";
 				$res = $globalDb->query($sql);
-				
+
 				if ($res->num_rows == 0)
 				{
 					sendTelegramMessage($msgid, "I am sorry, I do not know who you are. Did you subscribe yet?");
@@ -297,7 +297,7 @@ function process_telegram_updates()
 		}
 
 	}
-	
+
 	if ($new_offset_id != 0)
 	{
 		// update last_telegram_update_id to new_offset_id
@@ -311,31 +311,31 @@ function process_telegram_updates()
 function sync_forum_permission2()
 {
 	global $globalDb, $SETTINGS;
-	
+
 	do_log("in sync_forum_permission2():", 1);
 
 
 	$res = $globalDb->query("SELECT forum_group_id FROM groups WHERE group_name='Registered Members' ");
 	$row = $res->fetch_array();
 	$main_forum_group_id = $row['forum_group_id'];
-	
+
 	// get all users
 	$sql = "SELECT user_id, user_name, has_regged_api, forum_id FROM auth_users ";
 	$sth=$globalDb->query($sql);
 
-	
+
 	while ($row = $sth->fetch_array())
 	{
 		$user_id = $row['user_id'];
 		$user_name = $row['user_name'];
 		$forum_id = $row['forum_id'];
-		
-		$res = $globalDb->query("select g.forum_group_id, g.group_name, g.display_forum_title FROM groups g, group_membership m WHERE m.group_id = g.group_id AND 
+
+		$res = $globalDb->query("select g.forum_group_id, g.group_name, g.display_forum_title FROM groups g, group_membership m WHERE m.group_id = g.group_id AND
 							m.user_id = " . $user_id . "  AND m.state=0");
 
 		$forum_group_names = array();
-			
-		if ($res->num_rows == 0) // this means the user has no groups with state 0 --> no groups assigned --> remove all 
+
+		if ($res->num_rows == 0) // this means the user has no groups with state 0 --> no groups assigned --> remove all
 		{
 			// what? No groups? let's make sure he doesnt have roles on forum
 			do_log("Removing all forum groups (except Registered) from $user_name (forum_id: $forum_id)!", 1);
@@ -344,8 +344,8 @@ function sync_forum_permission2()
 			// set him to registered user again:
 			//set_forum_group($forum_id, $main_forum_group_id);
 			add_forum_group_membership($forum_id, $main_forum_group_id);
-			
-		} else 
+
+		} else
 		{
 			// sync groups
 			while ($row2 = $res->fetch_array())
@@ -359,14 +359,14 @@ function sync_forum_permission2()
 				{
 					$forum_group_names[] = $forum_title;
 				}
-				
+
 				if ($forum_group_id != 0 && !is_member_of_group($forum_id, $forum_group_id))
 				{
 					// add him
 					do_log("Adding user $user_name (forum_id: $forum_id) to forum group $forum_group_id !", 1);
 					add_forum_group_membership($forum_id, $forum_group_id);
 				}
-				
+
 			}
 		}
 
@@ -389,29 +389,29 @@ function decrypt_vcode($vcode)
 	}
 	return decrypt($vcode,$privateKey);
 }
-	
-	
+
+
 function parse_server_status()
 {
 	$api_up = false;
-	
+
 	$res = get_server_status();
-	
+
 	if ($res["filename"] == "error")
 	{
 		$api_up = false;
-	} else 
-	{	
+	} else
+	{
 		$xml = simplexml_load_file($res['filename']);
-		
+
 		$serverOpen = $xml->result->serverOpen;
 		if ($serverOpen == 'True')
 		{
 			$api_up = true;
 		}
-	
+
 	}
-	
+
 	return $api_up;
 }
 
@@ -428,16 +428,16 @@ function clean_shop()
 function update_alliances()
 {
 	global $globalDb;
-	
-	$res = api_get_alliance_list();	
+
+	$res = api_get_alliance_list();
 	do_log("Updating the list of alliances and member corporations",0);
-	
+
 	if ($res['status'] != 'OK')
 		return false;
-	
+
 	$alliancexml = simplexml_load_string($res['data']);
-	
-	// update alliances, set state to 1 = updateing 
+
+	// update alliances, set state to 1 = updateing
 	$globalDb->query("UPDATE alliances SET state=1 WHERE state <> 99");
 	$list=$alliancexml->result->rowset[0];
 
@@ -476,7 +476,7 @@ function update_alliances()
 				do_log("Member corporation found: $corp_id ", 9);
 
 				$sql = "INSERT INTO corporations
-				(alliance_id, corp_id, corp_name, corp_ticker, ceo, state) VALUES 
+				(alliance_id, corp_id, corp_name, corp_ticker, ceo, state) VALUES
 				($alliance_id, $corp_id, '', '', '', 0) ON DUPLICATE KEY UPDATE
 				state=0, alliance_id=$alliance_id"; // do not update corp_name here
 
@@ -511,7 +511,7 @@ function update_alliances()
 		if ($row['is_allowed_to_reg'] == 1)
 		{
 			$group_name = "Alliance " . $row['alliance_name'];
-			$group_desc = "Auto generated group for " . $row['alliance_name']; 
+			$group_desc = "Auto generated group for " . $row['alliance_name'];
 		} else if ($row['is_allied'] == 1)
 		{
 			$group_name = "Alliance " . $row['alliance_name'];
@@ -536,7 +536,7 @@ function update_alliances()
                         }
 
 		}
-		
+
 
 	}
 
@@ -545,33 +545,33 @@ function update_alliances()
 	$res = $globalDb->query("select c.alliance_id, a.alliance_name, c.corp_name, c.corp_id, c.ceo, c.state,
 				c.is_allowed_to_reg as corp_allowed_to_reg, a.is_allowed_to_reg as alliance_allowed_to_reg
  				FROM corporations c, alliances a
-				WHERE (c.alliance_id = a.alliance_id) AND 
+				WHERE (c.alliance_id = a.alliance_id) AND
 						(c.is_allowed_to_reg=1 OR a.is_allowed_to_reg=1 OR a.is_allied = 1 or c.is_allied = 1) AND
-						1=1 
+						1=1
 						ORDER BY a.alliance_name, c.corp_name ");
 
     echo "Downloading corp_sheet for all corporations\n";
-						
+
 	while ($row = $res->fetch_array())
 	{
 		$corp_id = $row['corp_id'];
 		$xml = api_get_corporation_sheet($corp_id);
-		
+
 		$corp_xml = simplexml_load_string($xml['data']);
-		
+
 		$ceo_id = intval($corp_xml->result->ceoID);
 		$ticker = $globalDb->real_escape_string($corp_xml->result->ticker);
-		
+
 		$corp_name = $globalDb->real_escape_string($corp_xml->result->corporationName);
 		$alliance_id = intval($corp_xml->result->allianceID);
 
 		// set default alliance to 1 (if it does not exist)
 		if ($alliance_id == 0)
 			$alliance_id = 1;
-		
+
 		if ($ceo_id != 0 && $ticker != "")
 		{
-			$sql = "UPDATE corporations SET ceo = $ceo_id, corp_ticker='$ticker', 
+			$sql = "UPDATE corporations SET ceo = $ceo_id, corp_ticker='$ticker',
 				alliance_id = $alliance_id, corp_name='$corp_name' WHERE corp_id = $corp_id ";
 			if (!$globalDb->query($sql))
 			{
@@ -595,30 +595,30 @@ function update_alliances()
 					}
 				}
 			}
-			
+
 		}
-		
-		
+
+
 	}
 }
 
 
-	
+
 
 
 
 function update_conq_stations()
 {
 	global $globalDb;
-	
+
 	do_log("In update_conq_stations", 7);
 	$result = api_get_conq_stations();
 	$xml = simplexml_load_string($result['data']);
-	
-	
+
+
 	$globalDb->query("UPDATE conqStations SET state=1 WHERE state=0");
-	
-	foreach ($xml->result->rowset->row as $row) 
+
+	foreach ($xml->result->rowset->row as $row)
 	{
 		$stationID = $row['stationID'];
 		$stationName = $globalDb->real_escape_string($row['stationName']);
@@ -626,21 +626,21 @@ function update_conq_stations()
 		$solarSystemID = $row['solarSystemID'];
 		$corpID = $row['corporationID'];
 		$corpName = $globalDb->real_escape_string($row['corporationName']);
-		
+
 		$res2 = $globalDb->query("INSERT INTO conqStations (stationID, stationName, stationTypeID, solarSystemID, corporationID, state, corpName) VALUES " .
 				" ($stationID, '$stationName', $stationTypeID, $solarSystemID, $corpID, 0, '$corpName') ON DUPLICATE KEY UPDATE " .
 				" stationName='$stationName', state=0, corporationID=$corpID, corpName='$corpName' ");
-				
+
 		if (!$res2) {
 		echo "INSERT INTO conqStations (stationID, stationName, stationTypeID, solarSystemID, corporationID, state, corpName) VALUES " .
 				" ($stationID, '$stationName', $stationTypeID, $solarSystemID, $corpID, 0, '$corpName') ON DUPLICATE KEY UPDATE " .
 				" stationName='$stationName', state=0, corporationID=$corpID, corpName='$corpName' ";
 		}
 	}
-	
-	
+
+
 	$globalDb->query("UPDATE conqStations SET state=99 WHERE state=1");
-	
+
 }
 
 
@@ -649,37 +649,37 @@ function update_conq_stations()
 function update_sov()
 {
 	global $globalDb;
-	
+
 	do_log("in update_sov", 1);
 	$res = api_get_sovereignty();
-	
+
 	if ($res['status'] == 'OK')
 	{
 		$xml = simplexml_load_string($res['data']);
 		if ($xml)
 		{
-			foreach($xml->result->rowset->row as $row) 
+			foreach($xml->result->rowset->row as $row)
 			{
 				$solarSystemID = $row['solarSystemID'];
 				$allianceID    = $row['allianceID'];
 				$factionID     = $row['factionID'];
 				$solarSystemName = $row['solarSystemName'];
 				$corporationID   = $row['corporationID'];
-				
+
 				$sql = "INSERT INTO sovereignty (solarSystemID, allianceID, factionID, corporationID, state) VALUES
 						($solarSystemID, $allianceID, $factionID, $corporationID, 0) ON DUPLICATE KEY UPDATE
 							allianceID=$allianceID, factionID=$factionID, corporationID=$corporationID, state=0 ";
-							
+
 				//echo "Update for sov: $sql\n";
-				
+
 				$globalDb->query($sql);
 			}
-			
+
 			return true;
-		}		
+		}
 	}
-	
-	
+
+
 	return false;
 }
 
@@ -719,7 +719,7 @@ function update_corp_asset_subitem($corp_id, $parent_id, $rows, $stmt)
 			echo "  Child row: corp_id=$corp_id, parent_id=$parent_id, itemID=$itemID, locationID=$locationID, typeID=$typeID, rawQ=$rawQuantity, q=$quantity, flag=$flag\n";
 			echo $globalDb->error . "\n";
 			break;
-		}		
+		}
 
 
 		// does this have children?
@@ -766,7 +766,7 @@ function update_player_asset_subitem($character_id, $parent_id, $rows, $stmt)
 			echo "  Child row: character_id=$character_id, parent_id=$parent_id, itemID=$itemID, locationID=$locationID, typeID=$typeID, rawQ=$rawQuantity, q=$quantity, flag=$flag\n";
 			echo $globalDb->error . "\n";
 			break;
-		}		
+		}
 
 
 		// does this have children?
@@ -805,7 +805,7 @@ function update_player_assets($character_id, $key_id, $vCode)
 		$globalDb->query($sql);
 
 		// prepare a statement
-		$sql = "INSERT INTO player_supercarriers (itemID, character_id, parentItemID, typeID, locationID, flag, rawQuantity, quantity, inSpace) VALUES 
+		$sql = "INSERT INTO player_supercarriers (itemID, character_id, parentItemID, typeID, locationID, flag, rawQuantity, quantity, inSpace) VALUES
 						(?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		if (! ($stmt = $globalDb->prepare($sql)))
 		{
@@ -817,8 +817,8 @@ function update_player_assets($character_id, $key_id, $vCode)
 
 
 		// go through all rows in the asset list and find a capital ship
-		foreach($xml->result->rowset->row as $row) 
-		{				
+		foreach($xml->result->rowset->row as $row)
+		{
 			$itemID = "" . $row['itemID'];
 			$locationID = $row['locationID'];
 			$typeID = $row['typeID'];
@@ -828,43 +828,43 @@ function update_player_assets($character_id, $key_id, $vCode)
 				// not a super carrier
 				continue;
 			}
-						
+
 			$singleton = $row['singleton']; // whether or not this item is packaged
-			
+
 			$quantity = $row['quantity'];
-			$flag = $row['flag'];				
+			$flag = $row['flag'];
 			$parentItemID = -1;
-			
-						
+
+
 			if ($singleton == 0) // packaged
 			{
 				$rawQuantity = 0;
 			} else {
-				
+
 				$rawQuantity = $row['rawQuantity'];
 			}
-			
+
 			// check if in space, if yes - collect the item ID - we will call locations api later
 			$inSpace = false;
 			if ($locationID < 60000000)
 			{
 				$inSpace = true;
 			}
-			
-			
+
+
 			// insert this into database
 			$stmt->bind_param("iiiiiiiii", $itemID, $character_id, $parentItemID, $typeID, $locationID, $flag, $rawQuantity, $quantity, $inSpace);
 			$stmt->execute();
-			
-			
+
+
 			if ($stmt->affected_rows != 1)
 			{
 				do_log("error, primary insert into player_supercarriers probably failed...", 1);
 				echo "error, primary insert into player_supercarriers probably failed...\n";
 				echo " itemId= $itemID, charId= $character_id, parent=$parentItemID, type=$typeID, location=$locationID, flag=$flag, raw=$rawQuantity, quant=$quantity, inSpace=$inSpace \n";
-				echo $globalDb->error . "\n";				
+				echo $globalDb->error . "\n";
 				break;
-			}		
+			}
 
 			// get name and location in space of this supercarrier
 			$loc_result = api_get_player_asset_locations($character_id, $key_id, $vCode, $itemID);
@@ -889,22 +889,22 @@ function update_player_assets($character_id, $key_id, $vCode)
 						echo $globalDb->error;
 					}
 				}
-			}		
-			
-			
+			}
+
+
 			// does it have children? (unless it's a completely fresh super, it should)
 			if ($row->rowset[0])
 			{
 				//echo "this row has children!\n";
 				$parentItemID = "$itemID";
 				$parentInSpace = $inSpace;
-				
+
 				// check children
 				update_player_asset_subitem($character_id, $parentItemID, $row->rowset[0], $stmt);
 			}
 		} // END foreach
 
-		
+
 
 	} else {
 		echo "error - could not load asset list for character $character_id (key_id: $key_id)\n";
@@ -941,73 +941,73 @@ function check_main_characters()
 function update_corp_assets()
 {
 	global $corp_time_diff, $globalDb, $SETTINGS;
-	do_log("in update_corp_assets()", 1);		
-	
-	$sth = $globalDb->query("select a.corp_id as corp_id,a.keyid as keyid,a.vcode as vcode, " . 
+	do_log("in update_corp_assets()", 1);
+
+	$sth = $globalDb->query("select a.corp_id as corp_id,a.keyid as keyid,a.vcode as vcode, " .
 				"b.alliance_id as alliance_id from corp_api_keys a, corporations b WHERE " .
 				"a.state = 0 AND a.corp_id=b.corp_id AND (last_asset_update is NULL OR timestampdiff(hour,last_asset_update,now()) >= 6) ");
-				
-	while($result=$sth->fetch_array()) 
+
+	while($result=$sth->fetch_array())
 	{
 		$alliance_id=intval($result['alliance_id']);
 		$corp_id=intval($result['corp_id']);
 		$key_id=$result['keyid'];
-		$vcode=decrypt_vcode($result['vcode']);	
-		
+		$vcode=decrypt_vcode($result['vcode']);
+
 		$office_result = api_get_corp_asset_list($corp_id, $key_id, $vcode);
-		
+
 		echo "Updating assets for corp $corp_id\n";
-		
+
 		if ($office_result['status'] != 'OK')
 		{
 			echo "error - could not load corp asset list from key $key_id; Result = " . $office_result['status']. " \n";
 			do_log("ERROR: could not load corp asset list from key $key_id; Result = " . $office_result['status']. "", 1);
 			continue;
 		}
-			
+
 		$corp_assets_xml = simplexml_load_string($office_result['data']);
-		
-		
+
+
 		if ($corp_assets_xml)
 		{
 			// FIRST: update current list of offices
 			$globalDb->query("UPDATE offices SET state=1 WHERE state=0 AND corp_id=$corp_id");
-			
+
 			$rows=$corp_assets_xml->result->rowset[0]->xpath("//row[@typeID='27']"); // only get offices
 			$cnt = 0;
 			foreach($rows as $row) {
 				$attr = $row[0]->attributes();
 				$location_id = $attr['locationID'];
-				
+
 				if (!$globalDb->query("INSERT INTO offices (corp_id, location_id, state) VALUES ($corp_id, $location_id, 0) ON DUPLICATE KEY UPDATE state=0"))
 				{
 					echo "Error: Could not add office for corp $corp_id\n";
 				}
-				
+
 				$cnt++;
-			}			
-			
-			echo "Found $cnt offices for corp $corp_id\n";			
-			
+			}
+
+			echo "Found $cnt offices for corp $corp_id\n";
+
 			// remove the remaining offices
 			if (!$globalDb->query("DELETE FROM offices WHERE state=1 AND corp_id=$corp_id;"))
 			{
 				echo "Error: Could not delete offices for corp $corp_id\n";
 				echo $globalDb->error . "\n";
-			}		
-			
-			
+			}
+
+
 			// SECOND: as we have the asset list already, let's iterate over all corp assets
-			
+
 			// clean all existing entries for now, we will add all of them again
 			if (!$globalDb->query("DELETE FROM corp_assets WHERE corp_id = $corp_id"))
 			{
 				echo "Error: Could not delete corp_assets entries for corp $corp_id \n";
 				echo $globalDb->error . "\n";
 			}
-			
+
 			// use a prepared statement for performance reasons
-			$sql = "INSERT INTO corp_assets (itemID, corp_id, parentItemID, typeID, locationID, flag, singleton, rawQuantity, quantity, inSpace) VALUES 
+			$sql = "INSERT INTO corp_assets (itemID, corp_id, parentItemID, typeID, locationID, flag, singleton, rawQuantity, quantity, inSpace) VALUES
 							(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			if (! ($stmt = $globalDb->prepare($sql)))
 			{
@@ -1016,12 +1016,12 @@ function update_corp_assets()
 				echo $globalDb->error;
 				continue;
 			}
-			
-			
+
+
 			$inSpaceItemIDs = array();
-			
+
 			// go through all rows in the asset list
-			foreach($corp_assets_xml->result->rowset->row as $row) 
+			foreach($corp_assets_xml->result->rowset->row as $row)
 			{
 				$itemID = $row['itemID'];
 				$locationID = $row['locationID'];
@@ -1031,7 +1031,7 @@ function update_corp_assets()
 				$singleton = $row['singleton'];
 				$rawQuantity = $row['rawQuantity'];
 				$parentItemID = -1;
-				
+
 				// check if in space, if yes - collect the item ID - we will call Corp/locations later
 				$inSpace = false;
 				if ($locationID < 60000000)
@@ -1039,9 +1039,9 @@ function update_corp_assets()
 					$inSpace = true;
 					$inSpaceItemIDs[] = $itemID;
 				}
-				
+
 				//echo "asset row: itemID=$itemID, locationID=$locationID, typeID=$typeID, rawQ=$rawQuantity, q=$quantity, flag=$flag, sing=$singleton\n";
-				
+
 				// insert this into database
 				$stmt->bind_param("iiiiiiiiii", $itemID, $corp_id, $parentItemID, $typeID, $locationID, $flag, $singleton, $rawQuantity, $quantity, $inSpace);
 				if (!$stmt->execute())
@@ -1050,8 +1050,8 @@ function update_corp_assets()
 					echo $globalDb->error . "\n";
 					echo "asset row: itemID=$itemID, locationID=$locationID, typeID=$typeID, rawQ=$rawQuantity, q=$quantity, flag=$flag, sing=$singleton\n";
 				}
-				
-				
+
+
 				if ($stmt->affected_rows != 1)
 				{
 					do_log("error, insert into corp_assets probably failed...", 1);
@@ -1065,37 +1065,37 @@ function update_corp_assets()
 					$stmt->bind_param("iiiiiiiiii", $itemID, $corp_id, $parentItemID, $typeID, $locationID, $flag, $singleton, $rawQuantity, $quantity, $inSpace);
 					$stmt->execute();
 				}
-						
-				
-				
+
+
+
 				// does it have children? - shouldn't, as it is a flat list...
 				if ($row->rowset[0])
 				{
 					//echo "this row has children!\n";
 					$parentItemID = "$itemID";
 					$parentInSpace = $inSpace;
-					
+
 					// check children
 					update_corp_asset_subitem($corp_id, $parentItemID, $row->rowset[0], $stmt);
 				}
 			} // END foreach
-			
-			
-			
-			
+
+
+
+
 			// okay, now go through $inSpaceItemIDs and update the database information with it
 			if (count($inSpaceItemIDs) > 1)
 			{
 				$chunks = array_chunk($inSpaceItemIDs,50); // chunking this with 50 per peice
-				
+
 				for ($i = 0; $i < count($chunks); $i++)
 				{
-					$itemIDs = implode(",",$chunks[$i]);	
-					
+					$itemIDs = implode(",",$chunks[$i]);
+
 					$loc_result = api_get_corp_locations($corp_id, $key_id, $vcode, $itemIDs);
-					
+
 					$loc_xml = simplexml_load_string($loc_result['data']);
-				
+
 					if ($loc_xml && $loc_xml->result->rowset)
 					{
 						foreach($loc_xml->result->rowset->row as $locRow)
@@ -1105,7 +1105,7 @@ function update_corp_assets()
 							$x    = $locRow['x'];
 							$y    = $locRow['y'];
 							$z    = $locRow['z'];
-														
+
 							if (!$globalDb->query("UPDATE corp_assets SET x=$x, y=$y, z=$z, realName='$itemName' WHERE itemID = $itemID"))
 							{
 								echo "Failed updating corp-assets location...\n";
@@ -1118,9 +1118,9 @@ function update_corp_assets()
 					{
 						do_log("Error, couldn't load corp locations xml for corp_id $corp_id, items: $itemIDs", 1);
 					}
-				}			
+				}
 			}
-			
+
 			$globalDb->query("UPDATE corp_api_keys SET last_asset_update=now() WHERE corp_id=$corp_id;");
 		}
 		else
@@ -1128,7 +1128,7 @@ function update_corp_assets()
 			do_log("Error, couldn't load/parse asset xml for corp_id $corp_id", 1);
 		}
 	}
-	
+
 	// delete all offices that are gone
 	$sql = "DELETE FROM offices WHERE state=99";
 	$globalDb->query($sql);
@@ -1158,9 +1158,9 @@ function update_corp_assets()
 						AND i.typeID = a.typeID AND a.corp_id = $corp_id
 						 ORDER BY typeName ASC";
 		$res = $globalDb->query($sql);
-		
-		
-						
+
+
+
 		while ($subRow = $res->fetch_array())
 		{
 			$silo_x = $subRow['x'];
@@ -1178,12 +1178,12 @@ function update_corp_assets()
 			// let's get all contents
 			$content_sql = "SELECT a.itemID, a.parentItemID, a.typeID, a.flag, a.singleton, a.rawQuantity, a.quantity , i.typeName
 				FROM corp_assets a, eve_staticdata.invTypes i
-				WHERE a.parentItemID = $silo_id 
+				WHERE a.parentItemID = $silo_id
 				AND i.typeID = a.typeID ORDER BY typeName ASC";
-				
+
 			$contentRes = $globalDb->query($content_sql);
 
-			// add silo content row to the database 
+			// add silo content row to the database
 			while ($contentRow = $contentRes->fetch_array())
 			{
 				$quantity = $contentRow['quantity'];
@@ -1192,10 +1192,10 @@ function update_corp_assets()
 				{
 					echo "Failed to query '$sql'\n";
 					echo $globalDb->error . "\n";
-				}			
-				
+				}
+
 				$updated_silo_cnt++;
-			}			
+			}
 
 		}
 	}
@@ -1213,9 +1213,9 @@ function handle_player_notifications()
 		" auth_users WHERE wants_email_notifications > 0 AND (
 		              last_notification is null OR TIMESTAMPDIFF(MINUTE , last_notification, NOW( ) ) >= 360
 					  ) "; // and didnt receive a notification in the last 6 hours
-	
+
 	$res = $globalDb->query($sql);
-	
+
 	while ($row = $res->fetch_array())
 	{
 		$user_id = intval($row['user_id']);
@@ -1223,31 +1223,31 @@ function handle_player_notifications()
 		$forum_id = $row['forum_id'];
 		$notType = $row['wants_email_notifications'];
 		$mail = $row['email'];
-		
+
 		// flag whether or not we found an issue
 		$notification_found = false;
 		// build notification message
 		$notifications = "Hello!\n\nThis is an automated mail from the $SETTINGS[base_url] API system. You are receiving this mail because you wanted to be notified about:\n";
-		
+
 		if ($notType & 1)
 		{
 			// check skills
 			$notifications .= " - Your skill queue running low\n";
 		}
-		
+
 		if ($notType & 2)
 		{
 			// check account payment
 			$notifications .= " - Your accounts running out of gametime\n";
 		}
-		
-		
+
+
 		$notifications .= "\n--------------------\nNotifications:\n";
-		
-		
+
+
 		// alright, check his api keys now, right?
 		$sql2 = "SELECT keyid, `comment` , char_training, paidUntil, last_checked, -timestampdiff ( minute, paidUntil, now( )) as diff
-	FROM player_api_keys 
+	FROM player_api_keys
 	WHERE user_id = $user_id AND state <= 10";
 
 		$res2 = $globalDb->query($sql2);
@@ -1269,14 +1269,14 @@ function handle_player_notifications()
 				{
 					$characters .= $row3['character_name'] . ", ";
 				}
-				
+
 				$characters = substr($characters, 0, strlen($characters)-2);
-				
+
 				$comment = $row2['comment'];
 				$paidUntil = $row2['paidUntil'];
 				$paidDiff  = $row2['diff'];
 				$training  = $row2['char_training'];
-				
+
 				// check gametime
 				if ($notType & 2)
 				{
@@ -1289,9 +1289,9 @@ function handle_player_notifications()
 					{
 						$notifications .= "Account with API key id $keyid ($characters - $comment) will expire at $paidUntil.\n";
 						$notification_found = true;
-					}					
+					}
 				}
-				
+
 				// check skills
 				if ($notType & 1)
 				{
@@ -1302,15 +1302,15 @@ function handle_player_notifications()
 					} else {
 						// it is training, but let's check skill queues, shall we?
 						$timeDiff = 780; // = 13 hours
-						$sql3 = "SELECT character_name, skill_endtime, -timestampdiff ( minute, skill_endtime, now( )) as diff 
-								FROM api_characters WHERE skill_id_training <> 0 
+						$sql3 = "SELECT character_name, skill_endtime, -timestampdiff ( minute, skill_endtime, now( )) as diff
+								FROM api_characters WHERE skill_id_training <> 0
 								AND user_id = $user_id AND key_id = $keyid AND -timestampdiff ( minute, skill_endtime, now( )) < $timeDiff";
-						
+
 						$res3 = $globalDb->query($sql3);
 						if ($res3->num_rows == 0)
 						{
 							do_log("Error... couldn't get any characters for key_id $keyid on user_id $user_id", 1);
-						} else 
+						} else
 						{
 							while ($row3 = $res3->fetch_array())
 							{
@@ -1318,7 +1318,7 @@ function handle_player_notifications()
 								$skill_endtime = $row3['skill_endtime'];
 								$skill_diff = $row3['diff'];
 								$skill_diff_hours = ceil($skill_diff/60);
-								
+
 								$notifications .= "Account with API key id $keyid ($characters - $comment), character $char_name skill-queue is finished in less than $skill_diff_hours hours at $skill_endtime.\n";
 								$notification_found = true;
 							}
@@ -1326,43 +1326,43 @@ function handle_player_notifications()
 					}
 				}
 			}
-		
+
 		}
 
-		
-		
+
+
 		if ($notification_found == true)
 		{
 			$notifications .= "\n\nYours sincerly,\nThe $SETTINGS[site_name] API Services.\n$SETTINGS[api_url]\n";
 			$notifications .= "You can unsubscribe by going to $SETTINGS[api_url], logging into the forums and going to the API site.";
-			
+
 			$notifications = str_replace("\n", "\r\n", $notifications);
-			
+
 			$globalDb->query("UPDATE auth_users SET last_notification=now() WHERE user_id=$user_id");
 			// send mail
 			mail($mail, "$SETTINGS[site_name] API Notification", $notifications, "From: $SETTINGS[site_name] API Services <$SETTINGS[from_email]>\r\n");
 			sleep(2); // sleep 2 seconds, because of some SMTP limitation...
 		}
-		
-		
+
+
 	} // END WHILE
 }
 
 
 
-/** get_all_members_from_apixml($xmldata) extracts an array with 
+/** get_all_members_from_apixml($xmldata) extracts an array with
 	character_ids as index and character_name as value from the
 	xml file supplied via corp api and returns it*/
 function get_all_members_from_apixml($xmldata, $alliance_id, $corp_id)
 {
 	global $globalDb;
-	
+
 	$data = array();
 	$cnt = 0;
-	foreach ($xmldata->result->rowset->row as $result) 
-	{		
+	foreach ($xmldata->result->rowset->row as $result)
+	{
 		$character_id=intval($result['characterID']);
-		$character_name=$globalDb->real_escape_string($result['name']); 
+		$character_name=$globalDb->real_escape_string($result['name']);
 		$startDateTime = $result['startDateTime'];
 		$title = $globalDb->real_escape_string($result['title']);
 		$logonDateTime = $result['logonDateTime'];
@@ -1373,15 +1373,15 @@ function get_all_members_from_apixml($xmldata, $alliance_id, $corp_id)
 		$shipType = $globalDb->real_escape_string($result['shipType']);
 		$roles = intval($result['roles']);
 		$grantableRoles = intval($result['grantableRoles']);
-		
-		
+
+
 		// because the character MIGHT already be in database, use on duplicate key update
-		$sql = "INSERT INTO corp_members 
-			(alliance_id, corp_id, character_id, character_name,state, shipTypeID, shipType, 
+		$sql = "INSERT INTO corp_members
+			(alliance_id, corp_id, character_id, character_name,state, shipTypeID, shipType,
 					location, title, logonDateTime, logoffDateTime, roles, grantableRoles, startDateTime )
-			 VALUES ($alliance_id, $corp_id, $character_id, '$character_name', 0, $shipTypeID, '$shipType', 
-					'$location', '$title', '$logonDateTime', '$logoffDateTime', $roles, $grantableRoles, '$startDateTime') 
-			 ON duplicate key 
+			 VALUES ($alliance_id, $corp_id, $character_id, '$character_name', 0, $shipTypeID, '$shipType',
+					'$location', '$title', '$logonDateTime', '$logoffDateTime', $roles, $grantableRoles, '$startDateTime')
+			 ON duplicate key
 			 UPDATE alliance_id=$alliance_id, corp_id=$corp_id, character_name='$character_name',
 			shipTypeID=$shipTypeID, shipType='$shipType', location='$location', title='$title',
 			logonDateTime='$logonDateTime', logoffDateTime='$logoffDateTime', roles=$roles, grantableRoles=$grantableRoles, startDateTime='$startDateTime'
@@ -1389,49 +1389,49 @@ function get_all_members_from_apixml($xmldata, $alliance_id, $corp_id)
 		$res = $globalDb->query($sql);
 		if (!$res)
 			do_log("ERROR - query failed (qry1): $sql", 1);
-			
+
 		$sql = "INSERT INTO session_tracking
-			(corp_id, character_id, logonDateTime, logoffDateTime) VALUES 
+			(corp_id, character_id, logonDateTime, logoffDateTime) VALUES
 				($corp_id, $character_id, '$logonDateTime', '$logoffDateTime') ON DUPLICATE KEY UPDATE logoffDateTime='$logoffDateTime'";
 		$res = $globalDb->query($sql);
 		if (!$res)
 			do_log("ERROR - query failed (qry2): $sql", 1);
-		
-		
+
+
 		$data[$character_id] = $character_name;
 		$cnt++;
 	}
 
 	do_log("get_all_members_from_apixml(alliance_id=$alliance_id, corp_id=$corp_id): found $cnt members", 1);
-	
+
 	return $data;
-}	
+}
 
 
 
 
-/** get_all_members_from_db($corp_id) extracts an array with 
-character_ids as index and character_name as value from the 
+/** get_all_members_from_db($corp_id) extracts an array with
+character_ids as index and character_name as value from the
 database based on the corp_id and returns it*/
 function get_all_members_from_db($corp_id)
 {
 	global $globalDb;
-	
+
 	$data = array();
-	
+
 	$sth = $globalDb->query("SELECT character_id, character_name FROM corp_members WHERE corp_id=$corp_id ");
-	
-	while ($result = $sth->fetch_array() ) 
-	{		
-		$character_id=$result['character_id']; 
+
+	while ($result = $sth->fetch_array() )
+	{
+		$character_id=$result['character_id'];
 		// run real_escape_string here to be able to compare characters
-		$character_name=$globalDb->real_escape_string($result['character_name']); 
-		
+		$character_name=$globalDb->real_escape_string($result['character_name']);
+
 		$data[$character_id] = $character_name;
-	}	
-	
+	}
+
 	return $data;
-}	
+}
 
 
 
@@ -1442,40 +1442,40 @@ function update_skilltree()
 {
 	global $globalDb;
 	do_log("Entered update_skilltree", 1);
-	
+
 	$res = api_get_skilltree();
 	if ($res['status'] == 'OK')
 	{
 		$skilltree = simplexml_load_string($res['data']);
-	
+
 		if ($skilltree)
 		{
 			echo "skilltree ok";
 			$error = false;
-			foreach ($skilltree->result->rowset->row as $group) 
+			foreach ($skilltree->result->rowset->row as $group)
 			{
 				$groupName = $group['groupName'];
 				$groupID   = $group['groupID'];
-				
+
 				//echo "Group = $groupName\n";
-				
+
 				foreach ($group->rowset->row as $skill)
 				{
 					$skillName = $skill['typeName'];
 					$skillTypeID = $skill['typeID'];
 					$published   = $skill['published'];
 					$rank = 0;
-					
+
 					//echo "SkillName = $skillName\n";
-					
-					$sql = "INSERT INTO invSkills (typeID, groupName, typeName, groupID, published, rank) VALUES 
+
+					$sql = "INSERT INTO invSkills (typeID, groupName, typeName, groupID, published, rank) VALUES
 						($skillTypeID, '$groupName', '$skillName', $groupID, $published, $rank) ON DUPLICATE KEY UPDATE
 							groupName = '$groupName', typeName = '$skillName', groupID = '$groupID', rank=$rank, published=$published";
-							
+
 					//echo $sql;
-							
+
 					$dbres = $globalDb->query($sql);
-					
+
 					if ($dbres != 1)
 					{
 						do_log("Error in update_skilltree(): " . $globalDb->error . " - executing '$sql' ", 1);
@@ -1484,7 +1484,7 @@ function update_skilltree()
 					}
 				}
 			}
-			
+
 			return !$error;
 		}
 		else
@@ -1494,7 +1494,7 @@ function update_skilltree()
 	} else {
 		do_log("failed downloading skilltree " . $res['filename'], 1);
 	}
-	
+
 	return false;
 }
 
@@ -1510,24 +1510,24 @@ function import_player_asset_data()
 	do_log("Entered import_player_asset_data",9);
 
 	// run all of them at a time
-	$sth = $globalDb->query("select p.user_id, p.keyid, p.vcode, p.access_mask 
-		FROM player_api_keys p, auth_users u 
+	$sth = $globalDb->query("select p.user_id, p.keyid, p.vcode, p.access_mask
+		FROM player_api_keys p, auth_users u
 		WHERE
 				p.state <=10 AND p.user_id = u.user_id AND u.pull_assets = 1 AND p.is_allied = 0
 		ORDER BY p.state, p.user_id");
-	
+
 	if ($sth->num_rows > 0)
     {
-		while($result=$sth->fetch_array()) 
+		while($result=$sth->fetch_array())
 		{
 			// get all character IDs associated to the current user_id
 			$sql2 = "SELECT character_id FROM api_characters WHERE key_id = " . $result['keyid'] . " AND user_id = " . $result['user_id'] . " AND state <= 10";
 			$res2 = $globalDb->query($sql2);
 			while ($row2 = $res2->fetch_array()) {
 				update_player_assets($row2['character_id'], $result['keyid'], decrypt_vcode($result['vcode']));
-			}			
+			}
 		}
-	} 
+	}
 }
 
 
@@ -1542,7 +1542,7 @@ function import_player_api_characters()
 	$sth = $globalDb->query("select user_id, keyid, vcode from player_api_keys WHERE " .
 				"state <=10 AND (last_checked = '0000-00-00 00:00:00' OR timestampdiff(minute,last_checked,now()) >= $member_time_diff OR state > 0) " .
 				"order by last_checked, state, user_id LIMIT 50");
-	
+
 	if ($sth->num_rows > 0) {
 		do_log("We have " . $sth->num_rows . " player api keys to be updated...", 1);
 		echo "CRON: We have " . $sth->num_rows . " player api keys to be updated...\n";
@@ -1563,7 +1563,7 @@ function import_player_api_characters()
 		}
 
 		$i = 0;
-		while($result=$sth->fetch_array()) 
+		while($result=$sth->fetch_array())
 		{
 			do_log("import_player_api_characters(): Key $i/" . $sth->num_rows, 9);
 			import_individual_api_key($result['user_id'], $result['keyid'], decrypt_vcode($result['vcode']), $prepareStatementWalletJournal);
@@ -1573,11 +1573,11 @@ function import_player_api_characters()
 		do_log("no player api keys to update...", 5);
 		echo "CRON: No player api keys to update.\n";
 	}
-	
+
 	// check for API keys that got deleted but still have characters in our database
 	// note: this should not happen because it prevents user from re-registering their characters
 	$sql = "select uid, character_id, character_name, user_id, key_id FROM api_characters a WHERE a.key_id not in (SELECT keyid from player_api_keys)";
-	
+
 	// idealy this should never happen, but there is a chance for it to happen,
 	// as Faidin from Infamy profed. Therefore, this little script is going to
 	// be dedicated to him by calling it Faidin-Check.
@@ -1592,7 +1592,7 @@ function import_player_api_characters()
 		$sql2 = "DELETE FROM api_characters WHERE uid = $uid";
 		$globalDb->query($sql2);
 	}
-	
+
 }
 
 
@@ -1600,19 +1600,19 @@ function import_player_api_characters()
 function check_public_sheet($char_id, $expected_name)
 {
 	$result = api_get_public_character_info($char_id);
-	
+
 	// check general status
 	if ($result['status'] != 'OK')
 		return false;
-		
-	
+
+
 	// parse content
 	$char_status = simplexml_load_string($result['data']);
-	
+
 	if ($char_status && $char_status->result->characterName == $expected_name)
 		return true;
-	
-	
+
+
 	return false;
 }
 
@@ -1627,18 +1627,18 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
 	// BigSako: don't use db_action that often, you are opening and closign the database connection like 1000 times, this costs a lot of time
 	// open it once, close it once - done
 	$mysqlidb = $globalDb;
-	
+
 	$time_start = microtime(true);
-	
-	
+
+
 	if ($vcode == "")
 	{
 		echo "Decrypting vcode for key_id $key_id failed... skipping.\n";
 		do_log("Error decrypting vcode for key_id $key_id - skipping", 1);
 		return false;
 	}
-	
-	
+
+
 	// check key permissions and validity
 	$key_details=api_get_key_permissions($key_id,$vcode);
 
@@ -1648,7 +1648,7 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
 
     $valid_access_masks = array_merge(array($allied_access_mask), $member_api_key_accessmasks);
 
-	
+
 	// check access mask
 	if(! // if any of the things is not true (proper access mask, account context (not character)
         (
@@ -1666,7 +1666,7 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
 			$msg = "Disabling API Key (key_id: $key_id, user_id: $user_id, status: " . $key_details['status']. ", mask: " .
                 $key_details['mask'] . ", context: " . $key_details['context'] . ")";
 			do_log($msg, 1);
-			
+
 			// disable this api key for now (state = 99)
 			$mysqlidb->query("update player_api_keys set state=99, last_checked=now(), access_mask='" . $key_details['mask'] . "', last_status='" . $key_details['status'] . "' where keyid='$key_id'");
 			$mysqlidb->query("update api_characters set state=99 where key_id='$key_id'");
@@ -1679,10 +1679,10 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
 			// temporary / unknown problem
 			$msg = "There was a (temporary) problem contacting the API services (key_id: $key_id, user_id: $user_id, status: " .
                 $key_details['status']. ", mask: " . $key_details['mask'] . ", context: " . $key_details['context'] . ")";
-			
+
 			do_log($msg, 1);
 			echo $msg . "\n";
-			
+
 			// set them to state 2 = temporary problem
 			$mysqlidb->query("update player_api_keys set state=2, last_checked=now(), access_mask='" . $key_details['mask'] . "', last_status='unknown' where keyid='$key_id'");
 			$mysqlidb->query("update api_characters set state=2 where key_id='$key_id'");
@@ -1696,7 +1696,7 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
     {
         $is_allied = 1;
     }
-	
+
 	// set characters to state 1 = validating
     $sql = "update player_api_keys set state=1, is_allied=$is_allied, last_status='', access_mask='" . $key_details['mask'] . "' where keyid='$key_id'";
 	if (!$mysqlidb->query($sql))
@@ -1704,7 +1704,7 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
         echo "MySQL Error; SQL = '$sql'\n Error: " . $mysqlidb->error . "\n";
     }
 	$mysqlidb->query("update api_characters set state=1 where key_id='$key_id'");
-	
+
 	if($is_allied == 0) { // only get account status for non allied members (meaning: only for full members)
         // get account status and paid until
         $results = api_get_account_status($key_id, $vcode);
@@ -1732,13 +1732,13 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
         // archive logonMinutes for activity tracking
         $mysqlidb->query("INSERT INTO  player_logonMinutes (`keyID`, `logonMinutes`) VALUES ($key_id, $logonMinutes)");
     }
-	
+
 	// counter for the amount of characters that are training
 	$char_training = 0;
-	
+
 	$apikeyxml = $key_details['xml'];
-	
-	
+
+
 	foreach($apikeyxml->result->key->rowset->row as $row)
     {
 		$character_id=intval($row['characterID']);
@@ -1746,20 +1746,20 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
 		$corp_id=intval($row['corporationID']);
 		$corp_name=sanitise($row['corporationName']);
 		do_log("import_individual_api_key(): Processing $character_name ($character_id)",7);
-		
+
 		// insert into character history
 		$sql = "insert into character_history (userid, character_id) VALUES ($user_id, $character_id) ON DUPLICATE KEY UPDATE last_seen=now()";
 		$inres_res = $mysqlidb->query($sql);
-		
+
 		// insert just in case it's not there already
 		$sql = "insert into api_characters " .
 			"(`character_id`,`character_name`,`corp_id`,`corp_name`,`user_id`,`key_id`,`state`) values " .
-			" ('$character_id','$character_name','$corp_id','$corp_name','$user_id','$key_id','0') 
+			" ('$character_id','$character_name','$corp_id','$corp_name','$user_id','$key_id','0')
 			ON DUPLICATE KEY UPDATE state=0, character_name='$character_name', user_id=$user_id, key_id=$key_id "; // do not update corp_id here
-			
-			
+
+
 		$ins_res = $mysqlidb->query($sql);
-		
+
 		if ($ins_res != 1)
 		{
 			echo "Error executing $sql\n";
@@ -1845,6 +1845,13 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
                 $skil_results = api_get_skill_in_training($key_id, $vcode, $character_id);
                 $skill_xml = simplexml_load_string($skil_results['data']);
 
+								if (!$skill_xml) {
+									do_log('Failed to load xml data from skill endpoint', 1);
+									do_log('---- DATA ----', 1);
+									do_log($skil_results['data'], 1);
+									do_log('---- DONE ----', 1);
+								}
+
 
                 $skill_rows = $skill_xml->result;
 
@@ -1914,13 +1921,13 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
                 $jumpActivation = $mysqlidb->real_escape_string($charsheetxml->result->jumpActivation);
                 $jumpFatigue = $mysqlidb->real_escape_string($charsheetxml->result->jumpFatigue);
                 $jumpLastUpdate = $mysqlidb->real_escape_string($charsheetxml->result->jumpLastUpdate);
-				
+
 				$cloneJumpDate = $mysqlidb->real_escape_string($charsheetxml->result->cloneJumpDate);
 				$homeStationID = intval($charsheetxml->result->homeStationID);
 				$freeSkillPoints = intval($charsheetxml->result->freeSkillPoints);
-				
-				
-				$tmpsql = "update api_characters set 
+
+
+				$tmpsql = "update api_characters set
                 	jumpActivation='$jumpActivation', jumpFatigue='$jumpFatigue', jumpLastUpdate='$jumpLastUpdate',
                 	cyno_skill='$cyno_skill', walletBalance='$balance', is_director='$director_count', homeStationID = $homeStationID, freeSP = $freeSkillPoints
                     WHERE character_id='$character_id'";
@@ -1961,9 +1968,9 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
                     $ship_type = $mysqlidb->real_escape_string($charinfoxml->result->shipTypeName); // BigSako - sanitise this just in case
                     $location = $mysqlidb->real_escape_string($charinfoxml->result->lastKnownLocation); // BigSako - sanitise this just in case...
                     $securityStatus = doubleval($charinfoxml->result->securityStatus);
-                    
-                    $mysqlidb->query("update api_characters set 
-                    	skillpoints = $skillpoints, character_location='$location', 
+
+                    $mysqlidb->query("update api_characters set
+                    	skillpoints = $skillpoints, character_location='$location',
                     	character_last_ship='$ship_type',
                     	sec_status=$securityStatus
                     	where character_id='$character_id'");
@@ -1984,7 +1991,7 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
                     // if location has changed, insert it into system_log
                     if ($last_known_location != $location)
                     {
-						$sql3 = "INSERT INTO character_system_log (character_id, first_seen, location, ship, last_seen) 
+						$sql3 = "INSERT INTO character_system_log (character_id, first_seen, location, ship, last_seen)
 						VALUES
 						($character_id, now(), '$location', '$ship_type', now())
 						";
@@ -2095,8 +2102,8 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
 	}
 	$mysqlidb->query("update api_characters set state=99, last_update=now() where state=1 and key_id='$key_id'");
 	$mysqlidb->query("update player_api_keys set state=0, char_training=$char_training, last_checked=now() where keyid='$key_id'");
-	
-	
+
+
 	$time_end = microtime(true);
 	$time = $time_end - $time_start;
 
@@ -2123,16 +2130,16 @@ function marry_corp_members()
 function get_all_group_names()
 {
 	global $globalDb;
-	
+
 	$res = $globalDb->query("SELECT group_id, group_name FROM groups ORDER BY group_id");
-	
+
 	$arr = array();
-	
+
 	while ($row = $res->fetch_array())
 	{
 		$arr[ $globalDb->real_escape_string($row['group_name']) ] = $row['group_id'];
 	}
-	
+
 	return $arr;
 }
 
@@ -2140,16 +2147,16 @@ function get_all_group_names()
 function get_all_auto_group_names()
 {
 	global $globalDb;
-	
+
 	$res = $globalDb->query("SELECT group_id, group_name FROM groups WHERE autoGenerated = 1 ORDER BY group_id");
-	
+
 	$arr = array();
-	
+
 	while ($row = $res->fetch_array())
 	{
 		$arr[ $globalDb->real_escape_string($row['group_name']) ] = $row['group_id'];
 	}
-	
+
 	return $arr;
 }
 
@@ -2166,7 +2173,7 @@ function bulk_update_market()
 	while ($row = $res->fetch_array())
 	{
 		$typeIds[] = $row['type_id'];
-		$regionId = $row['region_id'];		
+		$regionId = $row['region_id'];
 	}
 
 	$csvChunks = array_chunk($typeIds, 100);
@@ -2182,24 +2189,24 @@ function bulk_update_market()
 function bulk_update_characters()
 {
 	global $globalDb;
-	
+
 	// use character affiliation api call, e.g. https://api.eveonline.com/eve/CharacterAffiliation.xml.aspx?ids=349190414,94936849,94105123
 	// therefore we need to select about 200 IDs and provide them with a post request to the eve api
 	// we do this 200 by 200, so first, query the IDs
-	
+
 	$sql = "SELECT character_id FROM api_characters";
 	$res = $globalDb->query($sql);
-	
+
 	$character_ids = array();
-	
+
 	$cnt = 0;
-	
+
 	while ($row = $res->fetch_array())
 	{
-		$character_ids[] = $row['character_id'];		
+		$character_ids[] = $row['character_id'];
 		$cnt++;
 	}
-	
+
 	// prepare a statement
 	$sql = "UPDATE api_characters SET character_name=?, corp_id=?, corp_name=? WHERE character_id=?";
 	if (! ($stmt = $globalDb->prepare($sql)))
@@ -2210,9 +2217,9 @@ function bulk_update_characters()
 		echo $globalDb->error;
         return;
 	}
-		
-		
-	
+
+
+
 	$csvChunks = array_chunk($character_ids, 200);
 	// collect chunks and query api
 	foreach ($csvChunks as $chunk)
@@ -2221,7 +2228,7 @@ function bulk_update_characters()
 		$res = api_get_character_affiliation($csvIds);
 		$xml_res = simplexml_load_file($res['filename']);
 		$list=$xml_res->result->rowset[0];
-	
+
 		foreach ($list as $characterRow)
 		{
 			$character_id = intval($characterRow['characterID']);
@@ -2229,8 +2236,8 @@ function bulk_update_characters()
 			$alliance_id = intval($characterRow['allianceID']);
 			$corporation_id = intval($characterRow['corporationID']);
 			$corporation_name = $characterRow['corporationName'];
-			
-			
+
+
 			// insert this into database
 			$stmt->bind_param("sisi", $character_name, $corporation_id, $corporation_name, $character_id);
 			if (!$stmt->execute())
@@ -2241,7 +2248,7 @@ function bulk_update_characters()
 				return;
 			}
 		}
-		
+
 	}
 }
 
@@ -2252,25 +2259,25 @@ function bulk_update_characters()
 function rebuild_members()
 {
 	global $globalDb;
-	
+
 	do_log("Rebuilding 'validated members' group membership",1);
-	
+
 	$validated_members_groupid=1; // validated member group
-	
+
 	$groups = get_all_auto_group_names();
 	// add group 1 to its
 	$groups[] = $validated_members_groupid;
-	
+
 	// compile auto_generated group IDs as a string
 	$auto_group_ids = implode(",", $groups);
-	
+
 	do_log("Auto_group_ids=$auto_group_ids", 1);
 
 	// set group membership previous state to state, and then state to 1, indicating we are working in this groups right now
 	$globalDb->query("update group_membership set previous_state=state WHERE
 		group_id IN ($auto_group_ids)");
 	$globalDb->query("update group_membership set state=1 where group_id IN ($auto_group_ids) ");
-	
+
 	// update group membership for all auto generated groups
 
 
@@ -2297,13 +2304,13 @@ AND (c.is_allowed_to_reg = 1 OR d.is_allowed_to_reg = 1 or c.is_allied = 1 or d.
 
         $sql = "insert into group_membership (`group_id`,`user_id`,`state`) values " .
             "('$validated_members_groupid','$user_id',0) on duplicate key update state='0'";
-		
+
 		// valid member, so insert into group_membership or update and set state to 0
 		if (!$globalDb->query($sql))
         {
             echo "SQL='$sql' failed ...\n" . $globalDb->error . "\n";
         }
-				
+
 		// check if there is a group with the corp_name
 		$corp_name = $globalDb->real_escape_string($result['corp_name']);
 
@@ -2333,39 +2340,39 @@ AND (c.is_allowed_to_reg = 1 OR d.is_allowed_to_reg = 1 or c.is_allied = 1 or d.
                     "('$alliance_group_id','$user_id',0) on duplicate key update state='0'");
             }
         }
-		
-		
+
+
 	}
-	
+
 	// get all users with validated member group not working anymore, they need to be removed from any group
 	$sql = "SELECT user_id FROM group_membership WHERE state=1 and group_id='$validated_members_groupid' ";
 	$res = $globalDb->query($sql);
-	
+
 	while ($row = $res->fetch_array())
 	{
 		// set state to 99
 		$userid = $row['user_id'];
 		echo "Removing user $userid from all groups, as no longer a valid member...\n";
 		do_log("Removing user $userid from all groups because he is no longer a valid member ",1);
-		
+
 		$globalDb->query("update group_membership set state=99 where user_id = $userid");
 	}
-	
+
 	// get all users that we set to state=1, they need to be removed from that group
 	$sql = "SELECT user_id, group_id FROM group_membership WHERE state=1 ";
 	$res = $globalDb->query($sql);
-	
+
 	while ($row = $res->fetch_array())
 	{
-		// set state to 99 
+		// set state to 99
 		$userid = $row['user_id'];
 		$group_id = $row['group_id'];
 		do_log("Removing user $userid from group $group_id because he is no longer valid.",1);
 
 		add_user_notification($userid, "You have been automatically removed from group $group_id.", 0);
 
-		
-		$globalDb->query("update group_membership set state=99 where 
+
+		$globalDb->query("update group_membership set state=99 where
 					group_id = $group_id AND user_id = $userid");
 	}
 }
@@ -2378,7 +2385,7 @@ AND (c.is_allowed_to_reg = 1 OR d.is_allowed_to_reg = 1 or c.is_allied = 1 or d.
 function rebuild_directors()
 {
 	global $globalDb;
-	
+
 	do_log("Rebuilding 'directors' group membership",1);
 	$group=6;
 
@@ -2393,13 +2400,13 @@ function rebuild_directors()
 	$sth=$globalDb->query("SELECT a.user_id
 FROM auth_users a, api_characters b, corporations c, alliances d
 WHERE b.state <=2
-AND a.user_id = b.user_id AND b.is_director >= 1 
+AND a.user_id = b.user_id AND b.is_director >= 1
 AND (d.alliance_id = c.alliance_id)
 AND c.corp_id = b.corp_id
 AND (c.is_allowed_to_reg = 1 OR d.is_allowed_to_reg = 1)
 GROUP BY a.user_id
 ");
-		
+
 
 	while($result=$sth->fetch_array()) {
 		$user_id=$result['user_id'];
@@ -2409,14 +2416,14 @@ GROUP BY a.user_id
 		if($chain==0) {
 			$globalDb->query("insert into group_membership (`group_id`,`user_id`,`state`, `previous_state`) values " .
 				"('$group','$user_id',3, 99) on duplicate key update state=previous_state");
-			
+
 		}
 		else
 		{
 			do_log("Error: Group chain for $user_id against group $group said no...", 9);
 		}
 	}
-	
+
 	// if they were not confirmed, they need to set to state=99
 	$globalDb->query("update group_membership set state=99 where state='1' and group_id='$group'");
 }
@@ -2429,10 +2436,10 @@ GROUP BY a.user_id
 function rebuild_ceo()
 {
 	global $globalDb;
-	
-	do_log("Rebuilding 'ceo' group membership",1);		
+
+	do_log("Rebuilding 'ceo' group membership",1);
 	$group=50;
-	
+
 	// first of all, reset all is_ceo fields
 	$globalDb->query("update api_characters set is_ceo='0' ");
 	// now query corporations table for all ceos
@@ -2449,12 +2456,12 @@ function rebuild_ceo()
 	$sth=$globalDb->query("SELECT a.user_id, b.corp_id, b.corp_name, d.alliance_name
 FROM auth_users a, api_characters b, corporations c, alliances d
 WHERE b.state <=2 AND b.is_ceo = 1
-AND a.user_id = b.user_id 
+AND a.user_id = b.user_id
 AND (d.alliance_id = c.alliance_id)
 AND c.corp_id = b.corp_id
 AND (c.is_allowed_to_reg = 1 OR d.is_allowed_to_reg = 1)
 ");
-		
+
 
 	while($result=$sth->fetch_array()) {
 		$user_id=$result['user_id'];
@@ -2464,12 +2471,12 @@ AND (c.is_allowed_to_reg = 1 OR d.is_allowed_to_reg = 1)
 		if($chain==0) {
 			$globalDb->query("insert into group_membership (`group_id`,`user_id`,`state`) values " .
 				"('$group','$user_id',0) on duplicate key update state='0'");
-				
+
 			// check if toon is CEO
-			
+
 		}
 	}
-	
+
 	// if they were not confirmed, they need to set to state=99
 	$globalDb->query("update group_membership set state=99 where state='1' and group_id='$group'");
 }
@@ -2482,23 +2489,23 @@ AND (c.is_allowed_to_reg = 1 OR d.is_allowed_to_reg = 1)
 function rebuild_titans()
 {
 	global $globalDb;
-	
+
 	do_log("Rebuilding 'titan' group membership",1);
 	$group=3;
 	$globalDb->query("update group_membership set previous_state=state where group_id='$group'");
 	$globalDb->query("update group_membership set state=1 where group_id='$group'");
-	
-	
+
+
 	$sth=$globalDb->query("SELECT a.user_id, b.corp_id, b.corp_name, d.alliance_name
 FROM auth_users a, api_characters b, corporations c, alliances d
 WHERE b.state <=2 AND b.character_last_ship in ('Avatar','Erebus','Leviathan','Ragnarok')
-AND a.user_id = b.user_id 
+AND a.user_id = b.user_id
 AND (d.alliance_id = c.alliance_id)
 AND c.corp_id = b.corp_id
 AND (c.is_allowed_to_reg = 1 OR d.is_allowed_to_reg = 1)
 ");
-	
-	
+
+
 	while($result=$sth->fetch_array()) {
 		$user_id=$result['user_id'];
 		do_log("Starting group chain investigation for user id $user_id against group $group",9);
@@ -2514,22 +2521,22 @@ AND (c.is_allowed_to_reg = 1 OR d.is_allowed_to_reg = 1)
 function rebuild_supercarriers()
 {
 	global $globalDb;
-	
+
 	do_log("Rebuilding 'supercarriers' group membership",1);
 	$group=4;
 	$globalDb->query("update group_membership set previous_state=state where group_id='$group'");
 	$globalDb->query("update group_membership set state=1 where group_id='$group'");
-	
+
 	$sth=$globalDb->query("SELECT a.user_id, b.corp_id, b.corp_name, d.alliance_name
 FROM auth_users a, api_characters b, corporations c, alliances d
 WHERE b.state <=2 AND b.character_last_ship in ('Aeon','Hel','Nyx','Wyvern','Revenant')
-AND a.user_id = b.user_id 
+AND a.user_id = b.user_id
 AND (d.alliance_id = c.alliance_id)
 AND c.corp_id = b.corp_id
 AND (c.is_allowed_to_reg = 1 OR d.is_allowed_to_reg = 1)
 ");
-	
-	
+
+
 	while($result=$sth->fetch_array()) {
 		$user_id=$result['user_id'];
 		do_log("Starting group chain investigation for user id $user_id against group $group",9);
@@ -2539,7 +2546,7 @@ AND (c.is_allowed_to_reg = 1 OR d.is_allowed_to_reg = 1)
 				"('$group','$user_id',0) on duplicate key update state='0'");
 		}
 	}
-	$globalDb->query("update group_membership set state=99 where state=1 and group_id='$group'");	
+	$globalDb->query("update group_membership set state=99 where state=1 and group_id='$group'");
 }
 
 
