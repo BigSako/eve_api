@@ -505,8 +505,10 @@ function getAPIUrlPOST($url, $filename, $dataArray)
 	// LOG result
 	if ($result['status'] != 'OK')
 	{
-		echo "CRON: Error accessing API data ($filename) - " . $result['status'] . "\n";
-		do_log("CRON: Error accessing API data ($filename) - " . $result['status'], 1);
+		$msg = "CRON: Error accessing API data ($filename) - " . $result['status'] . "\n";
+		$msg .= print_r($result, true);
+		echo $msg;
+		do_log($msg, 1);
 	}
 
 	return $result;
@@ -775,16 +777,14 @@ function getAPIUrlInMemory($url,$postData="")
 function api_get_key_permissions($api_userid,$api_vcode)
 {
 	do_log("Entered api_get_key_permissions",8);
-	$filename=TMPDIR."$api_userid.APIKeyInfo.xml.aspx";
-	if(file_exists($filename)) {
-		unlink($filename);
-	}
+
 	$url="https://api.eveonline.com/account/APIKeyInfo.xml.aspx?keyID=$api_userid&vcode=$api_vcode";
 
-	$result = getAPIUrl($url, $filename);
+	$result = getAPIUrlInMemory($url);
+
 	if ($result['status'] == 'OK')
 	{
-		$apikeyxml = simplexml_load_file($result['filename']);
+		$apikeyxml = simplexml_load_string($result['data']);
 
 		if ($apikeyxml->error)
 		{

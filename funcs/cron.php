@@ -1680,6 +1680,8 @@ function import_individual_api_key($user_id, $key_id, $vcode, $wallet_journal_pr
 			$msg = "There was a (temporary) problem contacting the API services (key_id: $key_id, user_id: $user_id, status: " .
                 $key_details['status']. ", mask: " . $key_details['mask'] . ", context: " . $key_details['context'] . ")";
 
+			$msg .= print_r($key_details);
+
 			do_log($msg, 1);
 			echo $msg . "\n";
 

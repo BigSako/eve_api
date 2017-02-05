@@ -24,7 +24,7 @@ require('config.php');
 
 /**** CONFIG ****/
 
-define('DEBUG',0);
+define('DEBUG',7);
 define('LOGFILE',LOGDIR ."cron_corp.log");
 
 
@@ -116,9 +116,9 @@ switch ($SETTINGS['forum_type'])
 
 $globalDb = connectToDB();
 // get cronjobs
-$cronRes = $globalDb->query("SELECT id, name, last_executed, time_inbetween, 
-STATUS 
-FROM cronjobs WHERE last_executed = 0 OR time_inbetween = 0 OR TIMESTAMPDIFF( 
+$cronRes = $globalDb->query("SELECT id, name, last_executed, time_inbetween,
+STATUS
+FROM cronjobs WHERE last_executed = 0 OR time_inbetween = 0 OR TIMESTAMPDIFF(
 MINUTE , last_executed, NOW( ) )  > time_inbetween
 ORDER BY  `order` ASC ");
 
