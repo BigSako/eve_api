@@ -610,8 +610,10 @@ function getAPIUrl($url, $filename)
 	// LOG result
 	if ($result['status'] != 'OK')
 	{
-		echo "CRON: Error accessing API data ($filename) - " . $result['status'] . "\n";
-		do_log("CRON: Error accessing API data ($filename) - " . $result['status'], 1);
+		$msg = "CRON: Error accessing API data ($filename) - " . $result['status'] . "\n";
+		$msg .= print_r($result, true);
+		echo $msg;
+		do_log($msg, 1);
 		$total_failed_api_calls += 1;
 	}
 
