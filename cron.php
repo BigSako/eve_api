@@ -222,44 +222,39 @@ while ($cronRow = $cronRes->fetch_array())
 				}
 			}
 			break;
-		/*case "parse_irc_broadcast":
-			parseIRCBroadcasts();
+		 case "clean_shop":
+		 	clean_shop();
 
-			$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
-			break; */
-		// case "clean_shop":
-		// 	clean_shop();
-    //
-		// 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
-		// 	break;
-		// case "bulk_update_characters":
-		// 	bulk_update_characters();
-		//
-		// 	rebuild_groups();
-		//
-		// 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
-		// 	break;
-		// case "conq_stations": // every 3 hours
-		// 	update_conq_stations();
-		//
-		// 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
-		// 	break;
-		// case "sov": // every 3 hours
-		// 	if (update_sov())
-		// 	{
-		// 		$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
-		// 	} else {
-		// 		$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='Error' WHERE id=$id");
-		// 	}
-		// 	break;
-		// case "skilltree": // every 7 days
-		// 	if (update_skilltree())
-		// 	{
-		// 		$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
-		// 	} else {
-		// 		$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='Error' WHERE id=$id");
-		// 	}
-		// 	break;
+		 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
+		 	break;
+		 case "bulk_update_characters":
+		 	bulk_update_characters();
+
+		 	rebuild_groups();
+
+		 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
+		 	break;
+		 case "conq_stations": // every 3 hours
+		 	update_conq_stations();
+
+		 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
+		 	break;
+		 case "sov": // every 3 hours
+		 	if (update_sov())
+		 	{
+		 		$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
+		 	} else {
+		 		$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='Error' WHERE id=$id");
+		 	}
+		 	break;
+		 case "skilltree": // every 7 days
+		 	if (update_skilltree())
+		 	{
+		 		$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
+		 	} else {
+		 		$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='Error' WHERE id=$id");
+		 	}
+		 	break;
 		case "player_api": // do player api every 5 minutes, though there is another flag called $member_time_diff
 			// make sure that the selected mains of characters are linked via API
 			check_main_characters();
@@ -299,11 +294,11 @@ while ($cronRow = $cronRes->fetch_array())
 				$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='Failed' WHERE id=$id");
 			}
 			break;
-		// case "player_notifications": // player notifications are handled every 2 hours
-		// 	handle_player_notifications();
-		//
-		// 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
-		// 	break;
+		 case "player_notifications": // player notifications are handled every 2 hours
+		 	handle_player_notifications();
+
+		 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
+		 	break;
 		// case "clean_temp_folder":
 		// 	// TODO: Implement
 		// 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='Not implemented' WHERE id=$id");
@@ -312,15 +307,15 @@ while ($cronRow = $cronRes->fetch_array())
 		// 	// TODO: Implement
 		// 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='Not implemented' WHERE id=$id");
 		// 	break;
-		// case "alliances":
-		// 	update_alliances();
-		// 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
-		// 	break;
-		// case "market_data":
-		// 	// diff: 24 hours
-		// 	bulk_update_market();
-		// 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
-		// 	break;
+		 case "alliances":
+		 	update_alliances();
+		 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
+		 	break;
+		 case "market_data":
+		 	// diff: 24 hours
+		 	bulk_update_market();
+		 	$globalDb->query("UPDATE cronjobs SET last_executed=now(), status='OK' WHERE id=$id");
+		 	break;
 		case "clean_faulty_characters":
 			// clean characters that were sold etc...
 			$res = $globalDb->query("SELECT a.character_id, a.key_id
