@@ -53,15 +53,15 @@ else
 			$title = "Only Dust 514 characters";
 			break;
 		case "supersandtitans":
-			$where = "c.shipType in ('Nyx', 'Aeon', 'Hel', 'Wyvern', 'Revenant', 'Avatar', 'Erebus', 'Ragnarok', 'Leviathan') ";
+			$where = "c.shipType in ('Nyx', 'Aeon', 'Hel', 'Wyvern', 'Revenant', 'Vendetta', 'Vanquisher', 'Avatar', 'Erebus', 'Ragnarok', 'Leviathan') ";
 			$title = "Supers and Titans only";
 			break;
         case "supers":
-            $where = "c.shipType in ('Nyx', 'Aeon', 'Hel', 'Wyvern', 'Revenant') ";
+            $where = "c.shipType in ('Nyx', 'Aeon', 'Hel', 'Wyvern', 'Revenant', 'Vendetta') ";
             $title = "Supers only";
             break;
         case "titans":
-            $where = "c.shipType in ('Avatar', 'Erebus', 'Ragnarok', 'Leviathan') ";
+            $where = "c.shipType in ('Avatar', 'Erebus', 'Ragnarok', 'Leviathan', 'Vanquisher') ";
             $title = "Titans only";
             break;
 		default:

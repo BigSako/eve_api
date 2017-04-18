@@ -321,7 +321,7 @@ EOF;
     $qry = "SELECT `shipType`, COUNT(*) as `count`
 			FROM `corp_members`
 			WHERE `corp_id` = '$corp_id'
-			AND `shipType` IN ('Aeon', 'Hel', 'Nyx', 'Wyvern', 'Revenant', 'Avatar', 'Erebus', 'Ragnarok', 'Leviathan')
+			AND `shipType` IN ('Aeon', 'Hel', 'Nyx', 'Wyvern', 'Revenant', 'Vendetta', 'Avatar', 'Erebus', 'Ragnarok', 'Leviathan', 'Vanquisher')
 			GROUP BY `shipType`
 			ORDER BY `count` DESC";
     $res = $db->query($qry);

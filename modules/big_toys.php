@@ -102,7 +102,7 @@
 	$sth=$db->query("
 			SELECT c.character_id, c.character_name, c.location, c.shipType, r.regionName 
 			FROM `corp_members` c, eve_staticdata.mapSolarSystems m, eve_staticdata.mapRegions r
-			WHERE c.corp_id= $corp_id AND  c.shipType in ('Aeon', 'Hel', 'Nyx', 'Wyvern', 'Revenant', 'Avatar', 'Erebus', 'Ragnarok', 'Leviathan') 
+			WHERE c.corp_id= $corp_id AND  c.shipType in ('Aeon', 'Hel', 'Nyx', 'Wyvern', 'Revenant', 'Vendetta', 'Vanquisher', 'Avatar', 'Erebus', 'Ragnarok', 'Leviathan') 
 			and c.location = m.solarSystemName COLLATE utf8_unicode_ci
 			and m.regionID = r.regionID
 			ORDER BY r.regionName, c.location ASC, c.character_name ASC

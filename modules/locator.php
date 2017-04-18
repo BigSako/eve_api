@@ -282,7 +282,7 @@ else if ($action2 == "find")
 		
 		if ($cyno == 1)
 		{
-			$where .= " AND cyno_skill > 0 AND character_last_ship NOT IN ('Nyx', 'Hel', 'Aeon', 'Wyvern', 'Revenant', 'Avatar', 'Ragnarok', 'Erebus', 'Leviathan') ";
+			$where .= " AND cyno_skill > 0 AND character_last_ship NOT IN ('Nyx', 'Hel', 'Aeon', 'Wyvern', 'Revenant', 'Vendetta', 'Vanquisher', 'Avatar', 'Ragnarok', 'Erebus', 'Leviathan') ";
 			$title .= " cynos ";
 		} else {
 			$title .= " characters ";

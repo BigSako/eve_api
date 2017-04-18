@@ -2500,7 +2500,7 @@ function rebuild_titans()
 
 	$sth=$globalDb->query("SELECT a.user_id, b.corp_id, b.corp_name, d.alliance_name
 FROM auth_users a, api_characters b, corporations c, alliances d
-WHERE b.state <=2 AND b.character_last_ship in ('Avatar','Erebus','Leviathan','Ragnarok')
+WHERE b.state <=2 AND b.character_last_ship in ('Avatar','Erebus','Leviathan','Ragnarok', 'Vanquisher')
 AND a.user_id = b.user_id
 AND (d.alliance_id = c.alliance_id)
 AND c.corp_id = b.corp_id
